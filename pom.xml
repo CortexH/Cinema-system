@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Suas coordenadas Maven -->
+    <groupId>br.com.cinemaSYS</groupId>
+    <artifactId>Sistema-cinema</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <!-- !!! ESSA LINHA É CRUCIAL !!! -->
+    <packaging>pom</packaging>
+
+    <name>Sistema de cinema</name>
+    <description>Parent POM para gerenciar dependências e plugins do Meu Projeto</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <!-- Use uma versão LTS ou a mais recente estável -->
+        <version>3.2.5</version>
+        <relativePath/> <!-- Não procure localmente, use o repositório Maven -->
+    </parent>
+
+    <!-- Aqui você vai adicionar <properties>, <dependencyManagement>, <pluginManagement>, etc. -->
+    <properties>
+        <java.version>23</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <!-- Adicione outras propriedades de versão aqui (ex: spring.boot.version) -->
+
+        <h2.version>2.2.224</h2.version>
+
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>1.18.30</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>
