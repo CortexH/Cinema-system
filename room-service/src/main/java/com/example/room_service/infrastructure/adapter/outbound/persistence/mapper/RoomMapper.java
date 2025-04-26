@@ -6,6 +6,7 @@ import com.example.room_service.domain.valueObject.RoomIdVO;
 import com.example.room_service.infrastructure.adapter.outbound.persistence.entity.RoomEntity;
 import com.example.room_service.infrastructure.adapter.outbound.persistence.entity.SeatEntity;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class RoomMapper {
     }
 
     public static RoomEntity toEntity(Room domain){
+
         if(domain == null){
             return null;
         }
@@ -37,6 +39,7 @@ public class RoomMapper {
         RoomEntity entity = RoomEntity.builder()
                 .id(domain.getRoomId().value())
                 .name(domain.getName())
+                .seats(new ArrayList<>())
                 .build();
 
         if(domain.getSeats() != null){

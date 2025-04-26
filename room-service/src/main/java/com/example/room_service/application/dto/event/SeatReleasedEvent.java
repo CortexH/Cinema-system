@@ -4,7 +4,7 @@ import java.time.Instant;
 
 public record SeatReleasedEvent(
         String roomId,
-        String seatId,
+        String seatNumber,
 
         // String userId,
 

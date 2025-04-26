@@ -25,7 +25,7 @@
 
     <!-- Aqui você vai adicionar <properties>, <dependencyManagement>, <pluginManagement>, etc. -->
     <properties>
-        <java.version>23</java.version>
+        <java.version>21</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <!-- Adicione outras propriedades de versão aqui (ex: spring.boot.version) -->

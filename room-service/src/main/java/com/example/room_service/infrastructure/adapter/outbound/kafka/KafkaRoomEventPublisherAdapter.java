@@ -7,6 +7,8 @@ import com.example.room_service.domain.port.out.RoomEventPublisherPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
@@ -31,8 +33,8 @@ public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
 
     @Override
     public void publishRoomCreated(RoomCreatedEvent event) {
-        try{
 
+        try{
             Message<RoomCreatedEvent> message = MessageBuilder
                     .withPayload(event)
                     .setHeader(KafkaHeaders.TOPIC, roomCreatedTopic)
@@ -48,11 +50,37 @@ public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
 
     @Override
     public void publishSeatReserved(SeatReservedEvent event) {
+        try{
+
+            String messageKey = event.roomId() + "-" + event.seatNumber();
+            Message<SeatReservedEvent> message = MessageBuilder
+                    .withPayload(event)
+                    .setHeader(KafkaHeaders.TOPIC, seatReservedTopic)
+                    .setHeader(KafkaHeaders.KEY, messageKey)
+                    .build();
+
+            kafkaTemplate.send(message);
+        } catch (Exception e) {
+            log.info("Falha ao reservar assento :: {}", e.getMessage());
+        }
 
     }
 
     @Override
     public void publishSeatReleased(SeatReleasedEvent event) {
+        try{
+            String key = event.roomId() + "-" + event.seatNumber();
 
+            Message<SeatReleasedEvent> message = MessageBuilder
+                    .withPayload(event)
+                    .setHeader(KafkaHeaders.TOPIC, seatReleasedTopic)
+                    .setHeader(KafkaHeaders.KEY, key)
+                    .build();
+
+            kafkaTemplate.send(message);
+
+        } catch (Exception e) {
+            log.info("Falha ao liberar assento :: {}", e.getMessage());
+        }
     }
 }
