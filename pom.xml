@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
 
     <name>Sistema de cinema</name>
-    <description>Parent POM para gerenciar dependências e plugins do Meu Projeto</description>
+    <description>Parent POM para gerenciar dependências e plugins do sistema de cinema</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
