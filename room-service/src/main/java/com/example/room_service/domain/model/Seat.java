@@ -12,6 +12,9 @@ public class Seat {
     private final RoomIdVO roomIdVO;
     private final String seatNumber;
     private Boolean available;
+    public Boolean inUse;
+
+
 
     public Seat(
             SeatIdVO id, RoomIdVO rId,
@@ -85,5 +88,13 @@ public class Seat {
 
     public void setAvailable(Boolean available) {
         this.available = available;
+    }
+
+    public Boolean getInUse() {
+        return inUse;
+    }
+
+    public void setInUse(Boolean inUse) {
+        this.inUse = inUse;
     }
 }
