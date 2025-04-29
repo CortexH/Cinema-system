@@ -15,7 +15,7 @@ public class TicketMapper {
                 TicketIdVO.from(entity.getId()),null,
                 entity.getRoomId(), entity.getSeatId(), entity.getMovie(),
                 entity.getAccessibility(), entity.getMovieTime(),
-                ExpireDateVO.from(entity.getExpireTime())
+                ExpireDateVO.from(entity.getExpireTime()), entity.getValid()
         );
     }
 

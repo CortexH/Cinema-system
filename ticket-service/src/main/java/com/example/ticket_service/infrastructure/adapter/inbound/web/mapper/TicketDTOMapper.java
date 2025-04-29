@@ -22,7 +22,7 @@ public class TicketDTOMapper {
                 TicketIdVO.from(ticket.id()), QRCodeVO.from(ticket.qrCode()),
                 ticket.room(), ticket.seat(), ticket.movie(),
                 ticket.accessibility(), ticket.movie_time(),
-                ExpireDateVO.generate(ticket.movie_time())
+                ExpireDateVO.generate(ticket.movie_time()), null
         );
     }
 

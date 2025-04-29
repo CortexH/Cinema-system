@@ -25,11 +25,13 @@ public class Ticket {
 
     private ExpireDateVO expireTime;
 
+    private Boolean valid;
+
     public Ticket(
             TicketIdVO id, QRCodeVO qRCode,
             String room, String seat, String movie,
             Boolean accessibility, LocalDateTime movieTime,
-            ExpireDateVO expireTime
+            ExpireDateVO expireTime, Boolean valid
     ) {
 
         movieTime.format(DateTimeFormatter.ofPattern("dd/MM:yyyy hh:mm:ss"));
@@ -42,6 +44,7 @@ public class Ticket {
         this.accessibility = accessibility;
         this.movieTime = movieTime;
         this.expireTime = expireTime;
+        this.valid = valid;
     }
 
     public Ticket(
@@ -58,6 +61,16 @@ public class Ticket {
 
     public Boolean validateTicketExpiration(){
         return !this.expireTime.time().isAfter(LocalDateTime.now());
+    }
+
+    public void invalidateTicket(){
+        if(this.valid) {
+            this.valid = false;
+            return;
+        }
+
+        throw new IllegalArgumentException("Ticket já está inválido.");
+
     }
 
     public TicketIdVO getId() {
@@ -95,5 +108,13 @@ public class Ticket {
 
     public void setqRCode(QRCodeVO qRCode) {
         this.qRCode = qRCode;
+    }
+
+    public Boolean getValid() {
+        return valid;
+    }
+
+    public void setValid(Boolean valid) {
+        this.valid = valid;
     }
 }

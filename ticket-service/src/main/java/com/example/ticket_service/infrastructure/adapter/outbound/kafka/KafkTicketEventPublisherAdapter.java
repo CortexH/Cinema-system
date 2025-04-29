@@ -2,6 +2,7 @@ package com.example.ticket_service.infrastructure.adapter.outbound.kafka;
 
 import com.example.ticket_service.application.dto.event.TicketCreatedEvent;
 import com.example.ticket_service.application.dto.event.TicketRequestedEvent;
+import com.example.ticket_service.application.dto.event.TicketUsedEvent;
 import com.example.ticket_service.domain.port.out.TicketEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ public class KafkTicketEventPublisherAdapter implements TicketEventPublisher {
     }
 
     @Override
-    public void publishTicketUsed() {
+    public void publishTicketUsed(TicketUsedEvent event) {
 
     }
 

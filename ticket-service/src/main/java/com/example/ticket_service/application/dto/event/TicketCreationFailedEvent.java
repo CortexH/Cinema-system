@@ -1,11 +1,12 @@
 package com.example.ticket_service.application.dto.event;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record TicketCreationFailedEvent(
         String reason,
         LocalDateTime timestamp,
-        String seat,
+        List<String> seat,
         String room
 ) {
 }

@@ -1,11 +1,14 @@
 package com.example.ticket_service.application.service;
 
 import com.example.ticket_service.application.dto.event.TicketCreatedEvent;
+import com.example.ticket_service.application.dto.event.TicketCreationFailedEvent;
 import com.example.ticket_service.application.dto.event.TicketRequestedEvent;
+import com.example.ticket_service.application.dto.event.TicketUsedEvent;
 import com.example.ticket_service.application.dto.internal.MovieInformationDTO;
 import com.example.ticket_service.application.dto.internal.RealizePaymentDTO;
 import com.example.ticket_service.application.dto.response.TicketConciliationResponse;
 import com.example.ticket_service.application.dto.response.TicketResponse;
+import com.example.ticket_service.domain.exception.ExpiredTicketException;
 import com.example.ticket_service.domain.exception.PaymentFailedException;
 import com.example.ticket_service.domain.exception.SeatAlreadyReservedException;
 import com.example.ticket_service.domain.model.Ticket;
@@ -19,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,19 +43,24 @@ public class TicketService implements TicketUseCase {
     @Override
     public List<TicketResponse> purchaseTickets(String roomName, List<String> seatNumbers, String paymentToken) {
 
+        if(!roomGateway.validateSeatReserveInBatch(roomName, seatNumbers)){
+            throw new SeatAlreadyReservedException("Uma das poltronas solicitadas já está reservada");
+        }
+
         TicketRequestedEvent ticketRequestedEvent = new TicketRequestedEvent(
                 roomName, seatNumbers
         );
 
         ticketEventPublisher.publishTicketRequested(ticketRequestedEvent);
 
-        if(!roomGateway.validateSeatReserveInBatch(roomName, seatNumbers)){
-            // adicionar lançamento do evento de falha na criação do 'ticket'
-            throw new SeatAlreadyReservedException("Uma das poltronas solicitadas já está reservada");
-        }
 
         if(!paymentGateway.realizePayment(new RealizePaymentDTO(paymentToken))){
-            // adicionar lançamento do evento de falha na criação do 'ticket'
+
+            TicketCreationFailedEvent failedEvent = new TicketCreationFailedEvent(
+                    "Payment fail", LocalDateTime.now(),
+                    seatNumbers, roomName
+            );
+
             throw new PaymentFailedException("Falha no pagamento");
         }
 
@@ -64,7 +73,7 @@ public class TicketService implements TicketUseCase {
             Ticket ticket = new Ticket(
                     TicketIdVO.generate(), null,
                     roomName, seat, movieInfo.name(), movieInfo.accessibility(),
-                    movieInfo.time(), ExpireDateVO.generate(movieInfo.time())
+                    movieInfo.time(), ExpireDateVO.generate(movieInfo.time()), true
             );
 
             String qr = qrCodeGeneratorPort.generateQR(QRCODE_URL + ticket.getId().value(), 300, 300);
@@ -85,7 +94,30 @@ public class TicketService implements TicketUseCase {
 
     @Override
     public TicketConciliationResponse conciliateTicket(String ticketId) {
-        return null;
+        Ticket ticket = ticketRepositoryPort.findTicketById(ticketId);
+
+        if(ticket.getExpireTime().time().isBefore(LocalDateTime.now())){
+            throw new ExpiredTicketException("Ticket expirado");
+        }
+
+        if(!roomGateway.lockSeat(ticket.getRoom(), ticket.getSeat())){
+            throw new ExpiredTicketException("Ticket expirado");
+        }
+
+        TicketUsedEvent event = new TicketUsedEvent(
+                LocalDateTime.now(), ticket.getRoom(),
+                ticket.getSeat()
+        );
+
+        ticket.setValid(false);
+
+        ticketRepositoryPort.saveTicket(ticket);
+
+        ticketEventPublisher.publishTicketUsed(event);
+
+        return new TicketConciliationResponse(
+                ticket.getSeat(), ticket.getRoom()
+        );
     }
 
 }

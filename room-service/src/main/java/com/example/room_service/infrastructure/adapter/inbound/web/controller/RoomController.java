@@ -123,4 +123,31 @@ public class RoomController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{roomId}/seat/{seatId}/lock")
+    public ResponseEntity<Void> lockSeat(
+            @PathVariable("roomId") String roomId,
+            @PathVariable("seatId") String seatId
+    ){
+        return null;
+    }
+
+
+    @PutMapping("/{roomId}/seat/{seatId}/unlock")
+    public ResponseEntity<Void> unlockSeat(
+            @PathVariable("roomId") String roomId,
+            @PathVariable("seatId") String seatId
+    ){
+        return null;
+    }
+
+    @PostMapping("/{roomId}/seat/validate")
+    public ResponseEntity<?> validateSeatsDisponibility(
+            @PathVariable("roomId") String roomid
+    ){
+
+
+
+    }
+
 }
