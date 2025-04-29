@@ -1,18 +1,20 @@
 package com.example.ticket_service.application.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 public record GenerateTicketRequest(
 
-        @NotBlank
+        @NotNull
         String payment_token,
 
-        @NotBlank
+        @NotEmpty
         List<String> seat_numbers,
 
-        @NotBlank
+        @NotNull
         String room
 ) {
 }

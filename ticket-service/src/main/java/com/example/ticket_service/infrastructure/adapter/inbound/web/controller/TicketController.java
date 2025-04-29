@@ -1,6 +1,7 @@
 package com.example.ticket_service.infrastructure.adapter.inbound.web.controller;
 
 import com.example.ticket_service.application.dto.request.GenerateTicketRequest;
+import com.example.ticket_service.application.dto.response.TicketConciliationResponse;
 import com.example.ticket_service.application.dto.response.TicketResponse;
 import com.example.ticket_service.domain.port.in.TicketUseCase;
 import jakarta.validation.Valid;
@@ -29,10 +30,10 @@ public class TicketController {
     }
 
     @PostMapping("/conciliate/{ticketId}")
-    public ResponseEntity<Void> conciliateTicket(
+    public ResponseEntity<TicketConciliationResponse> conciliateTicket(
             @PathVariable("ticketId") String ticketId
     ){
-        return null;
+        return new ResponseEntity<>(ticketUseCase.conciliateTicket(ticketId), HttpStatus.OK);
     }
 
 }
