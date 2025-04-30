@@ -18,6 +18,8 @@ public interface RoomUseCase {
 
     Optional<Seat> findSeatInRoom(RoomIdVO roomIdVO, String seatId);
 
+    Boolean validateAllSeatsInARange(String roomName, List<String> seatIds);
+
     void reserve(RoomIdVO roomIdVO, String seatId);
     void releaseSeat(RoomIdVO roomIdVO, String seatId);
 }

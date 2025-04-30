@@ -53,13 +53,14 @@ public class TicketService implements TicketUseCase {
 
         ticketEventPublisher.publishTicketRequested(ticketRequestedEvent);
 
-
         if(!paymentGateway.realizePayment(new RealizePaymentDTO(paymentToken))){
 
             TicketCreationFailedEvent failedEvent = new TicketCreationFailedEvent(
                     "Payment fail", LocalDateTime.now(),
                     seatNumbers, roomName
             );
+
+            ticketEventPublisher.publishTicketCreationFail(failedEvent);
 
             throw new PaymentFailedException("Falha no pagamento");
         }

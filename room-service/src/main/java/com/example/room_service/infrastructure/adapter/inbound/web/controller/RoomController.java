@@ -3,10 +3,12 @@ package com.example.room_service.infrastructure.adapter.inbound.web.controller;
 import com.example.room_service.application.dto.request.CreateRoomRequestDTO;
 import com.example.room_service.application.dto.response.RoomResponse;
 import com.example.room_service.application.dto.response.SeatResponse;
+import com.example.room_service.domain.exception.SeatNotAvailableException;
 import com.example.room_service.domain.model.Room;
 import com.example.room_service.domain.model.Seat;
 import com.example.room_service.domain.port.in.RoomUseCase;
 import com.example.room_service.domain.valueObject.RoomIdVO;
+import com.example.room_service.domain.valueObject.SeatIdVO;
 import com.example.room_service.infrastructure.adapter.inbound.web.mapper.RoomDTOMapper;
 import com.example.room_service.infrastructure.adapter.inbound.web.mapper.SeatsDTOMapper;
 import jakarta.validation.Valid;
@@ -25,9 +27,7 @@ public class RoomController {
     private final RoomUseCase roomUseCase;
 
     @PostMapping
-    public ResponseEntity<RoomResponse> createRoom(
-            @RequestBody @Valid CreateRoomRequestDTO data
-            ){
+    public ResponseEntity<RoomResponse> createRoom(@RequestBody @Valid CreateRoomRequestDTO data){
 
         Room createdRoom = roomUseCase.createRoom(
                 data.name(),
@@ -39,9 +39,7 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}")
-    public ResponseEntity<RoomResponse> findRoomById(
-            @PathVariable String roomId
-    ){
+    public ResponseEntity<RoomResponse> findRoomById(@PathVariable String roomId){
         RoomIdVO id = RoomIdVO.from(roomId);
 
         Optional<Room> room = roomUseCase.findRoomById(id);
@@ -65,9 +63,7 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}/seats")
-    public ResponseEntity<List<SeatResponse>> getSeatsFromRoomById(
-            @PathVariable String roomId
-    ){
+    public ResponseEntity<List<SeatResponse>> getSeatsFromRoomById(@PathVariable String roomId){
 
         RoomIdVO id = RoomIdVO.from(roomId);
 
@@ -81,10 +77,7 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}/seats/{seatNumber}")
-    public ResponseEntity<SeatResponse> getSeatByRoomIdAndSeatNumber(
-            @PathVariable String roomId,
-            @PathVariable String seatNumber
-    ){
+    public ResponseEntity<SeatResponse> getSeatByRoomIdAndSeatNumber(@PathVariable String roomId, @PathVariable String seatNumber){
 
         RoomIdVO rID = RoomIdVO.from(roomId);
 
@@ -97,12 +90,8 @@ public class RoomController {
 
     }
 
-
     @PostMapping("/{roomId}/seats/{seatNumber}/reserve")
-    public ResponseEntity<Void> reserveSeat(
-            @PathVariable String roomId,
-            @PathVariable String seatNumber
-    ){
+    public ResponseEntity<Void> reserveSeat(@PathVariable String roomId, @PathVariable String seatNumber){
 
         RoomIdVO id = RoomIdVO.from(roomId);
 
@@ -112,15 +101,10 @@ public class RoomController {
     }
 
     @PostMapping("/{roomId}/seats/{seatNumber}/release")
-    public ResponseEntity<Void> releaseSeat(
-            @PathVariable String roomId,
-            @PathVariable String seatNumber
-    ){
+    public ResponseEntity<Void> releaseSeat(@PathVariable String roomId, @PathVariable String seatNumber){
 
         RoomIdVO id = RoomIdVO.from(roomId);
-
         roomUseCase.releaseSeat(id, seatNumber);
-
         return ResponseEntity.ok().build();
     }
 
@@ -138,16 +122,18 @@ public class RoomController {
             @PathVariable("roomId") String roomId,
             @PathVariable("seatId") String seatId
     ){
+
+        RoomIdVO roomIdVO = RoomIdVO.from(roomId);
+
         return null;
     }
 
-    @PostMapping("/{roomId}/seat/validate")
+    @PostMapping("/{roomName}/seat/validate")
     public ResponseEntity<?> validateSeatsDisponibility(
-            @PathVariable("roomId") String roomid
+            @PathVariable("roomName") String roomName,
+            @RequestBody List<String> seats
     ){
-
-
-
+        return ResponseEntity.ok(roomUseCase.validateAllSeatsInARange(roomName, seats));
     }
 
 }

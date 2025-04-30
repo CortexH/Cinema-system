@@ -2,6 +2,7 @@ package com.example.room_service.infrastructure.adapter.inbound.web;
 
 import com.example.room_service.application.dto.response.ErrorResponse;
 import com.example.room_service.application.dto.response.ValidationErrorResponse;
+import com.example.room_service.domain.exception.RoomAlreadyExistsException;
 import com.example.room_service.domain.exception.RoomNotFoundException;
 import com.example.room_service.domain.exception.SeatNotAvailableException;
 import com.example.room_service.domain.exception.SeatNotFoundException;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@ControllerAdvice
+@ControllerAdvice()
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RoomNotFoundException.class)
@@ -71,6 +72,17 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RoomAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleRoomAlreadyExistsException(RoomAlreadyExistsException ex, HttpServletRequest request){
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(), HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(Exception.class)

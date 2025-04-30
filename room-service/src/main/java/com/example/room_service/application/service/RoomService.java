@@ -3,7 +3,9 @@ package com.example.room_service.application.service;
 import com.example.room_service.application.dto.event.RoomCreatedEvent;
 import com.example.room_service.application.dto.event.SeatReleasedEvent;
 import com.example.room_service.application.dto.event.SeatReservedEvent;
+import com.example.room_service.domain.exception.RoomAlreadyExistsException;
 import com.example.room_service.domain.exception.RoomNotFoundException;
+import com.example.room_service.domain.exception.SeatNotAvailableException;
 import com.example.room_service.domain.exception.SeatNotFoundException;
 import com.example.room_service.domain.model.Room;
 import com.example.room_service.domain.model.Seat;
@@ -33,6 +35,9 @@ public class RoomService implements RoomUseCase {
 
         RoomIdVO id = RoomIdVO.generate();
         Room room = new Room(id, name, rows, seatsPerRows);
+
+        if(repositoryPort.findRoomByName(name).isPresent())
+            throw new RoomAlreadyExistsException("Já existe uma sala com o nome especificado.");
 
         Room savedRoom = repositoryPort.save(room);
 
@@ -79,6 +84,22 @@ public class RoomService implements RoomUseCase {
 
         return opRoom.get().findSeatByNumber(seatId);
 
+    }
+
+    @Override
+    public Boolean validateAllSeatsInARange(String roomName, List<String> seatIds) {
+        repositoryPort.findRoomByName(roomName)
+                .orElseThrow(() -> new RoomNotFoundException("Sala com o nome providenciado não encontrada"));
+
+        List<Seat> seats = repositoryPort.findAllSeatsInRange(roomName, seatIds);
+
+        seats.forEach(i -> {
+            if(!i.getAvailable() || i.getInUse()){
+                throw new SeatNotAvailableException("Poltrona não está liberada");
+            }
+        });
+
+        return true;
     }
 
     @Transactional

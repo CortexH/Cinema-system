@@ -1,6 +1,7 @@
 package com.example.ticket_service.domain.port.out;
 
 import com.example.ticket_service.application.dto.event.TicketCreatedEvent;
+import com.example.ticket_service.application.dto.event.TicketCreationFailedEvent;
 import com.example.ticket_service.application.dto.event.TicketRequestedEvent;
 import com.example.ticket_service.application.dto.event.TicketUsedEvent;
 
@@ -16,6 +17,6 @@ public interface TicketEventPublisher {
     void publishTicketUsed(TicketUsedEvent event);
 
     // lança o evento se a criação do ticket falhar, por qualquer motivo.
-    void publishTicketCreationFail();
+    void publishTicketCreationFail(TicketCreationFailedEvent event);
 
 }

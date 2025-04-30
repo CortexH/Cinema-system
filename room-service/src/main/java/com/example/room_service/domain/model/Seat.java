@@ -24,6 +24,7 @@ public class Seat {
         this.roomIdVO = Objects.requireNonNull(rId, "'roomId' não pode ser nulo");
         this.seatNumber = Objects.requireNonNull(seatNum, "'seatNumber' não pode ser nulo");
         this.available = true;
+        this.inUse = false;
     }
 
     public Seat(
@@ -34,6 +35,8 @@ public class Seat {
         this.roomIdVO = Objects.requireNonNull(rId, "'roomId' não pode ser nulo");
         this.seatNumber = Objects.requireNonNull(seatNum, "'seatNumber' não pode ser nulo");
         this.available = available;
+        this.inUse = false;
+
     }
 
     public void reserve(){

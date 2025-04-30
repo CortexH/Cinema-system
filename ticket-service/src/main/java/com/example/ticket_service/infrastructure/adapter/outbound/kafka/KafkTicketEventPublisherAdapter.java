@@ -1,6 +1,7 @@
 package com.example.ticket_service.infrastructure.adapter.outbound.kafka;
 
 import com.example.ticket_service.application.dto.event.TicketCreatedEvent;
+import com.example.ticket_service.application.dto.event.TicketCreationFailedEvent;
 import com.example.ticket_service.application.dto.event.TicketRequestedEvent;
 import com.example.ticket_service.application.dto.event.TicketUsedEvent;
 import com.example.ticket_service.domain.port.out.TicketEventPublisher;
@@ -27,7 +28,7 @@ public class KafkTicketEventPublisherAdapter implements TicketEventPublisher {
     }
 
     @Override
-    public void publishTicketCreationFail() {
+    public void publishTicketCreationFail(TicketCreationFailedEvent event) {
 
     }
 }
