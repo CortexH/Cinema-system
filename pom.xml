@@ -4,32 +4,39 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Suas coordenadas Maven -->
     <groupId>br.com.cinemaSYS</groupId>
     <artifactId>Sistema-cinema</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
-    <!-- !!! ESSA LINHA É CRUCIAL !!! -->
     <packaging>pom</packaging>
 
     <name>Sistema de cinema</name>
     <description>Parent POM para gerenciar dependências e plugins do sistema de cinema</description>
+    <modules>
+        <module>room-service</module>
+        <module>ticket-service</module>
+        <module>cinema-contracts</module>
+    </modules>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <!-- Use uma versão LTS ou a mais recente estável -->
         <version>3.2.5</version>
-        <relativePath/> <!-- Não procure localmente, use o repositório Maven -->
+        <relativePath/>
     </parent>
 
-    <!-- Aqui você vai adicionar <properties>, <dependencyManagement>, <pluginManagement>, etc. -->
+    <repositories>
+        <repository>
+            <id>confluent</id>
+            <name>Confluent</name>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
+
     <properties>
         <java.version>21</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <!-- Adicione outras propriedades de versão aqui (ex: spring.boot.version) -->
-
         <h2.version>2.2.224</h2.version>
 
     </properties>
@@ -37,9 +44,26 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>br.com.cinemaSYS</groupId>
+                <artifactId>cinema-contracts</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${h2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>1.11.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-avro-serializer</artifactId>
+                <version>7.6.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

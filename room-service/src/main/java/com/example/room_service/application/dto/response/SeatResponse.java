@@ -1,8 +1,10 @@
 package com.example.room_service.application.dto.response;
 
+import com.example.room_service.domain.enums.SeatState;
+
 public record SeatResponse(
         String id,
         String seat_number,
-        Boolean available
+        SeatState state
 ) {
 }

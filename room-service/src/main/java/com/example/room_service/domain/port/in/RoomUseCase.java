@@ -22,4 +22,9 @@ public interface RoomUseCase {
 
     void reserve(RoomIdVO roomIdVO, String seatId);
     void releaseSeat(RoomIdVO roomIdVO, String seatId);
+
+    void holdSeats(RoomIdVO roomId, List<String> seatNumber);
+    void lockSeats(RoomIdVO roomId, List<String> seatNumbers);
+    void unlockSeats(RoomIdVO roomId, List<String> seatNumbers);
+
 }

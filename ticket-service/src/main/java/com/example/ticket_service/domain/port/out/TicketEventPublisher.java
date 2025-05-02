@@ -1,14 +1,14 @@
 package com.example.ticket_service.domain.port.out;
 
-import com.example.ticket_service.application.dto.event.TicketCreatedEvent;
-import com.example.ticket_service.application.dto.event.TicketCreationFailedEvent;
-import com.example.ticket_service.application.dto.event.TicketRequestedEvent;
-import com.example.ticket_service.application.dto.event.TicketUsedEvent;
+import com.example.ticket_service.application.dto.event.producer.TicketCreatedEvent;
+import com.example.ticket_service.application.dto.event.producer.TicketCreationFailedEvent;
+import com.example.ticket_service.application.dto.event.producer.TicketRequestedEventDTO;
+import com.example.ticket_service.application.dto.event.producer.TicketUsedEvent;
 
 public interface TicketEventPublisher {
 
     // lança o evento antes do pagamento ser realizado
-    void publishTicketRequested(TicketRequestedEvent event);
+    void publishTicketRequested(TicketRequestedEventDTO event);
 
     // lança o evento depois do pagamento ser realizado e ticket criado
     void publishTicketCreated(TicketCreatedEvent event);

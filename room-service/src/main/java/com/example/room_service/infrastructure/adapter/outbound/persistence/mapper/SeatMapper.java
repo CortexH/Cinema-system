@@ -20,7 +20,7 @@ public class SeatMapper {
 
         return new Seat(
                 seatId, roomId, entity.getSeatNumber(),
-                entity.getAvailable()
+                entity.getState()
         );
     }
 
@@ -34,6 +34,7 @@ public class SeatMapper {
                 domain.getSeatId().value(),
                 domain.getSeatNumber(),
                 domain.getAvailable(),
+                domain.getInUse(),
                 roomEntity
         );
     }

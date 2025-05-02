@@ -6,6 +6,7 @@ import com.example.room_service.domain.model.Seat;
 import com.example.room_service.domain.port.out.RoomRepositoryPort;
 import com.example.room_service.domain.valueObject.RoomIdVO;
 import com.example.room_service.infrastructure.adapter.outbound.persistence.entity.RoomEntity;
+import com.example.room_service.infrastructure.adapter.outbound.persistence.entity.SeatEntity;
 import com.example.room_service.infrastructure.adapter.outbound.persistence.mapper.RoomMapper;
 import com.example.room_service.infrastructure.adapter.outbound.persistence.mapper.SeatMapper;
 import com.example.room_service.infrastructure.adapter.outbound.persistence.repository.repository.SpringRoomRepository;
@@ -57,4 +58,5 @@ public class RoomRepositoryAdapter implements RoomRepositoryPort {
     public void deleteById(RoomIdVO id) {
         roomRepository.deleteById(id.value());
     }
+
 }

@@ -1,5 +1,6 @@
 package com.example.room_service.domain.model;
 
+import com.example.room_service.domain.enums.SeatState;
 import com.example.room_service.domain.exception.SeatNotAvailableException;
 import com.example.room_service.domain.valueObject.RoomIdVO;
 import com.example.room_service.domain.valueObject.SeatIdVO;
@@ -11,10 +12,8 @@ public class Seat {
     private final SeatIdVO seatIdVO;
     private final RoomIdVO roomIdVO;
     private final String seatNumber;
-    private Boolean available;
-    public Boolean inUse;
-
-
+    private SeatState state;
+    private Boolean inUse;
 
     public Seat(
             SeatIdVO id, RoomIdVO rId,
@@ -23,31 +22,31 @@ public class Seat {
         this.seatIdVO = Objects.requireNonNull(id, "'seatId' não pode ser nulo");
         this.roomIdVO = Objects.requireNonNull(rId, "'roomId' não pode ser nulo");
         this.seatNumber = Objects.requireNonNull(seatNum, "'seatNumber' não pode ser nulo");
-        this.available = true;
+        this.state = SeatState.FREE;
         this.inUse = false;
     }
 
     public Seat(
             SeatIdVO id, RoomIdVO rId,
-            String seatNum, Boolean available
+            String seatNum, SeatState state
     ){
         this.seatIdVO = Objects.requireNonNull(id, "'seatId' não pode ser nulo");
         this.roomIdVO = Objects.requireNonNull(rId, "'roomId' não pode ser nulo");
         this.seatNumber = Objects.requireNonNull(seatNum, "'seatNumber' não pode ser nulo");
-        this.available = available;
+        this.state = state;
         this.inUse = false;
 
     }
 
     public void reserve(){
-        if(!this.available){
+        if(!(this.state == SeatState.FREE)){
             throw new SeatNotAvailableException("assento não está disponível!");
         }
-        this.available = false;
+        this.state = SeatState.BLOCKED;
     }
 
     public void release(){
-        this.available = true;
+        this.state = SeatState.FREE;
     }
 
     @Override
@@ -69,7 +68,7 @@ public class Seat {
                 "seatId=" + seatIdVO +
                 ", roomId=" + roomIdVO +
                 ", seatNumber='" + seatNumber + '\'' +
-                ", available=" + available +
+                ", state=" + state +
                 '}';
     }
 
@@ -85,12 +84,12 @@ public class Seat {
         return seatNumber;
     }
 
-    public Boolean getAvailable() {
-        return available;
+    public SeatState getAvailable() {
+        return state;
     }
 
-    public void setAvailable(Boolean available) {
-        this.available = available;
+    public void setAvailable(SeatState state) {
+        this.state = state;
     }
 
     public Boolean getInUse() {

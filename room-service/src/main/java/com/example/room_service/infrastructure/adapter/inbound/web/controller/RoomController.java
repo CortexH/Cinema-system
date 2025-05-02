@@ -13,6 +13,7 @@ import com.example.room_service.infrastructure.adapter.inbound.web.mapper.RoomDT
 import com.example.room_service.infrastructure.adapter.inbound.web.mapper.SeatsDTOMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -113,7 +114,12 @@ public class RoomController {
             @PathVariable("roomId") String roomId,
             @PathVariable("seatId") String seatId
     ){
-        return null;
+
+        RoomIdVO roomIdVO = RoomIdVO.from(roomId);
+
+        roomUseCase.lockSeats(roomIdVO, List.of(seatId));
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 
@@ -123,13 +129,13 @@ public class RoomController {
             @PathVariable("seatId") String seatId
     ){
 
-        RoomIdVO roomIdVO = RoomIdVO.from(roomId);
 
-        return null;
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/{roomName}/seat/validate")
-    public ResponseEntity<?> validateSeatsDisponibility(
+    public ResponseEntity<Boolean> validateSeatsDisponibility(
             @PathVariable("roomName") String roomName,
             @RequestBody List<String> seats
     ){

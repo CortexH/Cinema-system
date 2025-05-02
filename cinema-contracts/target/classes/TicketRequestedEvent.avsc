@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "name": "TicketRequestedEvent",
+  "namespace": "br.com.cinemaSYS.events",
+  "doc": "Evento disparado quando um ticket é solicitado",
+  "fields": [
+    {
+      "name": "room",
+      "type": "string",
+      "doc": "Nome da sala solicitada."
+    },
+    {
+      "name": "roomId",
+      "type": "string",
+      "doc": "ID da sala solicitada"
+    },
+    {
+      "name": "seat_numbers",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "doc": "Lista dos números dos assentos solicitados"
+    }
+  ]
+}

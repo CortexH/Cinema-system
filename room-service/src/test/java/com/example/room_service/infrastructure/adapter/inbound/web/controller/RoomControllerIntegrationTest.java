@@ -2,10 +2,9 @@ package com.example.room_service.infrastructure.adapter.inbound.web.controller;
 
 import com.example.room_service.application.dto.event.RoomCreatedEvent;
 import com.example.room_service.application.dto.request.CreateRoomRequestDTO;
+import com.example.room_service.domain.enums.SeatState;
 import com.example.room_service.domain.port.out.RoomEventPublisherPort;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +13,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -65,7 +61,7 @@ public class RoomControllerIntegrationTest {
                 .andExpect(jsonPath("$.seats").isArray())
                 .andExpect(jsonPath("$.seats", hasSize(expectedSize)))
                 .andExpect(jsonPath("$.seats[0].seat_number").value("A1"))
-                .andExpect(jsonPath("$.seats[0].available").value(true))
+                .andExpect(jsonPath("$.seats[0].state").value(SeatState.FREE.name()))
                 .andExpect(jsonPath("$.seats[5].seat_number").value("B1"));
 
         verify(roomEventPublisherPort, times(1)).publishRoomCreated(any(RoomCreatedEvent.class));

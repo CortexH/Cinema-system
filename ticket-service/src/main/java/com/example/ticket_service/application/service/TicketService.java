@@ -1,9 +1,9 @@
 package com.example.ticket_service.application.service;
 
-import com.example.ticket_service.application.dto.event.TicketCreatedEvent;
-import com.example.ticket_service.application.dto.event.TicketCreationFailedEvent;
-import com.example.ticket_service.application.dto.event.TicketRequestedEvent;
-import com.example.ticket_service.application.dto.event.TicketUsedEvent;
+import com.example.ticket_service.application.dto.event.producer.TicketCreatedEvent;
+import com.example.ticket_service.application.dto.event.producer.TicketCreationFailedEvent;
+import com.example.ticket_service.application.dto.event.producer.TicketRequestedEventDTO;
+import com.example.ticket_service.application.dto.event.producer.TicketUsedEvent;
 import com.example.ticket_service.application.dto.internal.MovieInformationDTO;
 import com.example.ticket_service.application.dto.internal.RealizePaymentDTO;
 import com.example.ticket_service.application.dto.response.TicketConciliationResponse;
@@ -47,11 +47,11 @@ public class TicketService implements TicketUseCase {
             throw new SeatAlreadyReservedException("Uma das poltronas solicitadas já está reservada");
         }
 
-        TicketRequestedEvent ticketRequestedEvent = new TicketRequestedEvent(
-                roomName, seatNumbers
+        TicketRequestedEventDTO ticketRequestedEventDTO = new TicketRequestedEventDTO(
+                roomName, "", seatNumbers
         );
 
-        ticketEventPublisher.publishTicketRequested(ticketRequestedEvent);
+        ticketEventPublisher.publishTicketRequested(ticketRequestedEventDTO);
 
         if(!paymentGateway.realizePayment(new RealizePaymentDTO(paymentToken))){
 

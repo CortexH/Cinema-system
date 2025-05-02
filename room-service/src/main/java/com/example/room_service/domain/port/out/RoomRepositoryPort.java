@@ -17,5 +17,4 @@ public interface RoomRepositoryPort {
     List<Seat> findAllSeatsInRange(String roomName, List<String> seats);
 
     void deleteById(RoomIdVO id);
-
 }

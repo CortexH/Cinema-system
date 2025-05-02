@@ -3,6 +3,7 @@ package com.example.room_service.application.service;
 import com.example.room_service.application.dto.event.RoomCreatedEvent;
 import com.example.room_service.application.dto.event.SeatReleasedEvent;
 import com.example.room_service.application.dto.event.SeatReservedEvent;
+import com.example.room_service.domain.enums.SeatState;
 import com.example.room_service.domain.exception.RoomAlreadyExistsException;
 import com.example.room_service.domain.exception.RoomNotFoundException;
 import com.example.room_service.domain.exception.SeatNotAvailableException;
@@ -94,7 +95,7 @@ public class RoomService implements RoomUseCase {
         List<Seat> seats = repositoryPort.findAllSeatsInRange(roomName, seatIds);
 
         seats.forEach(i -> {
-            if(!i.getAvailable() || i.getInUse()){
+            if(!(i.getAvailable().equals(SeatState.FREE)) || i.getInUse()){
                 throw new SeatNotAvailableException("Poltrona não está liberada");
             }
         });
@@ -147,4 +148,33 @@ public class RoomService implements RoomUseCase {
         ));
 
     }
+
+    @Transactional
+    @Override
+    public void holdSeats(RoomIdVO roomId, List<String> seatNumbers){
+        List<Seat> seats = repositoryPort.findAllSeatsInRange(roomId.value().toString(), seatNumbers);
+
+        seats.stream().map(i -> {
+            if(!i.getInUse() || !i.getAvailable().equals(SeatState.FREE)){
+                throw new SeatNotAvailableException(("A poltrona de número " + i.getSeatNumber() + " não está liberada"));
+            }
+            i.setAvailable(SeatState.HOLD);
+            return i;
+        }).toList();
+
+
+
+    }
+
+    @Override
+    public void lockSeats(RoomIdVO roomId, List<String> seatNumbers) {
+
+    }
+
+    @Override
+    public void unlockSeats(RoomIdVO roomId, List<String> seatNumbers) {
+
+    }
+
+
 }

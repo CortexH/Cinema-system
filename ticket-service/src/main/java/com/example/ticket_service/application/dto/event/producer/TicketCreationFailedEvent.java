@@ -1,4 +1,4 @@
-package com.example.ticket_service.application.dto.event;
+package com.example.ticket_service.application.dto.event.producer;
 
 import java.time.LocalDateTime;
 import java.util.List;

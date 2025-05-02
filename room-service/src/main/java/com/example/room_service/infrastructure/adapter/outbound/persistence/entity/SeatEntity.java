@@ -1,5 +1,6 @@
 package com.example.room_service.infrastructure.adapter.outbound.persistence.entity;
 
+import com.example.room_service.domain.enums.SeatState;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,7 +22,11 @@ public class SeatEntity {
     private String seatNumber;
 
     @Column(nullable = false)
-    private Boolean available;
+    @Enumerated(EnumType.STRING)
+    private SeatState state;
+
+    @Column(nullable = false)
+    private Boolean blocked;
 
     @JoinColumn(name = "room_id")
     @ManyToOne(fetch = FetchType.LAZY)
