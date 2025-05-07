@@ -34,7 +34,7 @@ public class Ticket {
             ExpireDateVO expireTime, Boolean valid
     ) {
 
-        movieTime.format(DateTimeFormatter.ofPattern("dd/MM:yyyy hh:mm:ss"));
+        //movieTime.format(DateTimeFormatter.ofPattern("dd/MM:yyyy hh:mm:ss"));
 
         this.id = id;
         this.qRCode = qRCode;

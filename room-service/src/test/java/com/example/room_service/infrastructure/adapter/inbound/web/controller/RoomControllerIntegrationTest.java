@@ -1,6 +1,6 @@
 package com.example.room_service.infrastructure.adapter.inbound.web.controller;
 
-import com.example.room_service.application.dto.event.RoomCreatedEvent;
+import com.example.room_service.application.dto.event.RoomCreatedEventDTO;
 import com.example.room_service.application.dto.request.CreateRoomRequestDTO;
 import com.example.room_service.domain.enums.SeatState;
 import com.example.room_service.domain.port.out.RoomEventPublisherPort;
@@ -64,7 +64,7 @@ public class RoomControllerIntegrationTest {
                 .andExpect(jsonPath("$.seats[0].state").value(SeatState.FREE.name()))
                 .andExpect(jsonPath("$.seats[5].seat_number").value("B1"));
 
-        verify(roomEventPublisherPort, times(1)).publishRoomCreated(any(RoomCreatedEvent.class));
+        verify(roomEventPublisherPort, times(1)).publishRoomCreated(any(RoomCreatedEventDTO.class));
 
     }
 

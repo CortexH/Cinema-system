@@ -49,6 +49,7 @@ public class Seat {
         this.state = SeatState.FREE;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if(this == o) return true;
@@ -57,10 +58,13 @@ public class Seat {
         return Objects.equals(seatIdVO, seat.seatIdVO);
     }
 
+
     @Override
     public int hashCode() {
-        return Objects.hash(seatIdVO);
+        return Objects.hash(seatNumber);
     }
+
+
 
     @Override
     public String toString() {

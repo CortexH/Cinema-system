@@ -1,12 +1,13 @@
 package com.example.room_service.application.dto.event;
 
 import java.time.Instant;
+import java.util.List;
 
-public record SeatReservedEvent(
-        String seatNumber,
+public record SeatReleasedEventDTO(
         String roomId,
+        List<String> seatNumbers,
 
-        // String userId
+        // String userId,
 
         Instant timestamp
 ) {

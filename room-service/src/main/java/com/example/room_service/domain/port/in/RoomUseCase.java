@@ -12,16 +12,20 @@ public interface RoomUseCase {
     Room createRoom(String name, Integer rows, Integer seatsPerRows);
 
     Optional<Room> findRoomById(RoomIdVO id);
+    Optional<Room> findRoomByName(String name);
     List<Room> findAllRooms();
 
     List<Seat> findSeatsByRoom(RoomIdVO roomIdVO);
 
     Optional<Seat> findSeatInRoom(RoomIdVO roomIdVO, String seatId);
 
-    Boolean validateAllSeatsInARange(String roomName, List<String> seatIds);
+    Boolean validateAllSeatsInARange(RoomIdVO roomId, List<String> seatIds);
 
-    void reserve(RoomIdVO roomIdVO, String seatId);
-    void releaseSeat(RoomIdVO roomIdVO, String seatId);
+    void deleteRoom(RoomIdVO roomIdVO);
+    void deleteSeat(RoomIdVO roomId, List<String> seatNumber);
+
+    void reserve(RoomIdVO roomIdVO, List<String> seatId);
+    void releaseSeat(RoomIdVO roomIdVO, List<String> seatId);
 
     void holdSeats(RoomIdVO roomId, List<String> seatNumber);
     void lockSeats(RoomIdVO roomId, List<String> seatNumbers);

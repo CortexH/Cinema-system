@@ -1,9 +1,9 @@
 package com.example.ticket_service.domain.port.out;
 
-import com.example.ticket_service.application.dto.event.producer.TicketCreatedEvent;
-import com.example.ticket_service.application.dto.event.producer.TicketCreationFailedEvent;
-import com.example.ticket_service.application.dto.event.producer.TicketRequestedEventDTO;
-import com.example.ticket_service.application.dto.event.producer.TicketUsedEvent;
+import com.example.ticket_service.application.dto.event.TicketCreatedEventDTO;
+import com.example.ticket_service.application.dto.event.TicketCreationFailedEventDTO;
+import com.example.ticket_service.application.dto.event.TicketRequestedEventDTO;
+import com.example.ticket_service.application.dto.event.TicketUsedEventDTO;
 
 public interface TicketEventPublisher {
 
@@ -11,12 +11,12 @@ public interface TicketEventPublisher {
     void publishTicketRequested(TicketRequestedEventDTO event);
 
     // lança o evento depois do pagamento ser realizado e ticket criado
-    void publishTicketCreated(TicketCreatedEvent event);
+    void publishTicketCreated(TicketCreatedEventDTO event);
 
     // lança o evento depois do ticket ser efetivamente usado
-    void publishTicketUsed(TicketUsedEvent event);
+    void publishTicketUsed(TicketUsedEventDTO event);
 
     // lança o evento se a criação do ticket falhar, por qualquer motivo.
-    void publishTicketCreationFail(TicketCreationFailedEvent event);
+    void publishTicketCreationFail(TicketCreationFailedEventDTO event);
 
 }

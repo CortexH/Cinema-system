@@ -1,5 +1,7 @@
 package com.example.room_service.domain.model;
 
+import com.example.room_service.domain.enums.SeatState;
+import com.example.room_service.domain.exception.SeatNotAvailableException;
 import com.example.room_service.domain.exception.SeatNotFoundException;
 import com.example.room_service.domain.valueObject.RoomIdVO;
 import com.example.room_service.domain.valueObject.SeatIdVO;
@@ -10,7 +12,7 @@ public class Room {
 
     private final RoomIdVO roomIdVO;
     private final String name;
-    private final List<Seat> seats;
+    private List<Seat> seats;
 
     public Room(RoomIdVO roomIdVO, String name, Integer seatRows, Integer seatPerRow){
         this.roomIdVO = roomIdVO;
@@ -43,21 +45,116 @@ public class Room {
         ).findFirst();
     }
 
-    public Seat reserveSeat(String number){
-        Seat seat = findSeatByNumber(number)
-                .orElseThrow(() -> new SeatNotFoundException("Poltrona com o id especificado não foi encontrada"));
+    public List<Seat> reserveSeats(List<String> seats){
 
-        seat.reserve();
+        List<Seat> alteredSeats = new ArrayList<>();
 
-        return seat;
+        seats.forEach(i -> {
+
+            Seat seat = findSeatByNumber(i)
+                    .orElseThrow(() -> new SeatNotFoundException("Poltrona com número " + i + " não encontrada"));
+
+            if(seats.contains(seat.getSeatNumber())){
+
+                if(seat.getAvailable().equals(SeatState.BLOCKED)){
+                    throw new SeatNotAvailableException("Poltrona com número " + i + " já está reservada");
+                }
+                seat.setAvailable(SeatState.BLOCKED);
+                alteredSeats.add(seat);
+            }
+        });
+
+        return alteredSeats;
+
     }
 
-    public Seat releaseSeat(String number){
-        Seat seat = findSeatByNumber(number)
-                .orElseThrow(() -> new SeatNotFoundException("Poltrona com o id especificado não foi encontrada"));
+    public List<Seat> releaseSeats(List<String> seats){
+        List<Seat> alteredSeats = new ArrayList<>();
 
-        seat.release();
-        return seat;
+        seats.forEach(i -> {
+
+            Seat seat = findSeatByNumber(i)
+                    .orElseThrow(() -> new SeatNotFoundException("Poltrona com número " + i + " não encontrada"));
+
+            if(seats.contains(seat.getSeatNumber())){
+
+                if(seat.getAvailable().equals(SeatState.FREE)){
+                    throw new SeatNotAvailableException("Poltrona com número " + i + " já está livre");
+                }
+                seat.setAvailable(SeatState.FREE);
+                alteredSeats.add(seat);
+            }
+        });
+
+        return alteredSeats;
+
+    }
+
+    public List<Seat> holdSeats(List<String> seatNumbers){
+
+        List<Seat> usedSeats = new ArrayList<>();
+
+        this.seats.forEach(i -> {
+            if(!seatNumbers.contains(i.getSeatNumber())){
+                return;
+            }
+            if(i.getInUse() || !i.getAvailable().equals(SeatState.FREE)){
+                throw new SeatNotAvailableException(("A poltrona de número " + i.getSeatNumber() + " não está liberada"));
+            }
+            i.setAvailable(SeatState.HOLD);
+            usedSeats.add(i);
+        });
+
+        return usedSeats;
+
+    }
+
+    public List<Seat> lockSeats(List<String> seatNumbers){
+
+        List<Seat> usedSeats = new ArrayList<>();
+
+        this.seats.forEach(i -> {
+            if(!seatNumbers.contains(i.getSeatNumber())){
+                return;
+            }
+            if(i.getInUse() || !i.getAvailable().equals(SeatState.BLOCKED)){
+                throw new SeatNotAvailableException(("A poltrona de número " + i.getSeatNumber() + " não está liberada"));
+            }
+            i.setInUse(true);
+            usedSeats.add(i);
+        });
+
+        return usedSeats;
+    }
+
+    public List<Seat> unlockSeats(List<String> seatNumbers){
+
+        List<Seat> usedSeats = new ArrayList<>();
+
+        this.seats.forEach(i -> {
+            if(!seatNumbers.contains(i.getSeatNumber())){
+                return;
+            }
+            if(!i.getInUse()){
+                throw new SeatNotAvailableException(("A poltrona de número " + i.getSeatNumber() + " não está liberada"));
+            }
+            i.setInUse(false);
+            usedSeats.add(i);
+        });
+
+        return usedSeats;
+    }
+
+    public void deleteSeat(String number){
+        Seat seat = seats.stream().filter(i -> i.getSeatNumber().equals(number))
+                .findFirst()
+                .orElse(null);
+
+        if(seat == null){
+            throw new SeatNotFoundException("Poltrona com número especificado não encontrada");
+        }
+        this.seats.remove(seat);
+
     }
 
     @Override

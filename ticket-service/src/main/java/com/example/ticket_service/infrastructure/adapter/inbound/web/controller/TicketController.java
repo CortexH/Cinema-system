@@ -33,7 +33,9 @@ public class TicketController {
     public ResponseEntity<TicketConciliationResponse> conciliateTicket(
             @PathVariable("ticketId") String ticketId
     ){
-        return new ResponseEntity<>(ticketUseCase.conciliateTicket(ticketId), HttpStatus.OK);
+        return new ResponseEntity<>(
+                ticketUseCase.conciliateTicket(ticketId),
+                HttpStatus.OK
+        );
     }
-
 }

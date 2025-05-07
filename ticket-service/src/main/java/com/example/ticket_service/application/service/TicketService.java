@@ -1,9 +1,9 @@
 package com.example.ticket_service.application.service;
 
-import com.example.ticket_service.application.dto.event.producer.TicketCreatedEvent;
-import com.example.ticket_service.application.dto.event.producer.TicketCreationFailedEvent;
-import com.example.ticket_service.application.dto.event.producer.TicketRequestedEventDTO;
-import com.example.ticket_service.application.dto.event.producer.TicketUsedEvent;
+import com.example.ticket_service.application.dto.event.TicketCreatedEventDTO;
+import com.example.ticket_service.application.dto.event.TicketCreationFailedEventDTO;
+import com.example.ticket_service.application.dto.event.TicketRequestedEventDTO;
+import com.example.ticket_service.application.dto.event.TicketUsedEventDTO;
 import com.example.ticket_service.application.dto.internal.MovieInformationDTO;
 import com.example.ticket_service.application.dto.internal.RealizePaymentDTO;
 import com.example.ticket_service.application.dto.response.TicketConciliationResponse;
@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,23 +42,23 @@ public class TicketService implements TicketUseCase {
     private String QRCODE_URL;
 
     @Override
-    public List<TicketResponse> purchaseTickets(String roomName, List<String> seatNumbers, String paymentToken) {
+    public List<TicketResponse> purchaseTickets(String roomId, List<String> seatNumbers, String paymentToken) {
 
-        if(!roomGateway.validateSeatReserveInBatch(roomName, seatNumbers)){
+        if(!roomGateway.validateSeatReserveInBatch(roomId, seatNumbers)){
             throw new SeatAlreadyReservedException("Uma das poltronas solicitadas já está reservada");
         }
 
         TicketRequestedEventDTO ticketRequestedEventDTO = new TicketRequestedEventDTO(
-                roomName, "", seatNumbers
+                roomId, seatNumbers
         );
 
         ticketEventPublisher.publishTicketRequested(ticketRequestedEventDTO);
 
         if(!paymentGateway.realizePayment(new RealizePaymentDTO(paymentToken))){
 
-            TicketCreationFailedEvent failedEvent = new TicketCreationFailedEvent(
+            TicketCreationFailedEventDTO failedEvent = new TicketCreationFailedEventDTO(
                     "Payment fail", LocalDateTime.now(),
-                    seatNumbers, roomName
+                    seatNumbers, roomId
             );
 
             ticketEventPublisher.publishTicketCreationFail(failedEvent);
@@ -65,7 +66,7 @@ public class TicketService implements TicketUseCase {
             throw new PaymentFailedException("Falha no pagamento");
         }
 
-        MovieInformationDTO movieInfo = movieGateway.getMovieDataFromRoom(roomName);
+        MovieInformationDTO movieInfo = movieGateway.getMovieDataFromRoom(roomId);
 
         List<Ticket> requestedTickets = new ArrayList<>();
 
@@ -73,7 +74,7 @@ public class TicketService implements TicketUseCase {
 
             Ticket ticket = new Ticket(
                     TicketIdVO.generate(), null,
-                    roomName, seat, movieInfo.name(), movieInfo.accessibility(),
+                    roomId, seat, movieInfo.name(), movieInfo.accessibility(),
                     movieInfo.time(), ExpireDateVO.generate(movieInfo.time()), true
             );
 
@@ -85,8 +86,8 @@ public class TicketService implements TicketUseCase {
 
         ticketRepositoryPort.saveAllTickets(requestedTickets);
 
-        TicketCreatedEvent ticketCreatedEvent = new TicketCreatedEvent(roomName, seatNumbers);
-        ticketEventPublisher.publishTicketCreated(ticketCreatedEvent);
+        TicketCreatedEventDTO ticketCreatedEventDTO = new TicketCreatedEventDTO(roomId, seatNumbers, Instant.now());
+        ticketEventPublisher.publishTicketCreated(ticketCreatedEventDTO);
 
         return requestedTickets.stream()
                 .map(TicketDTOMapper::toResponse)
@@ -105,13 +106,13 @@ public class TicketService implements TicketUseCase {
             throw new ExpiredTicketException("Ticket expirado");
         }
 
-        TicketUsedEvent event = new TicketUsedEvent(
-                LocalDateTime.now(), ticket.getRoom(),
+        TicketUsedEventDTO event = new TicketUsedEventDTO(
+                Instant.now(), ticket.getRoom(),
                 ticket.getSeat()
         );
 
-        ticket.setValid(false);
 
+        ticket.setValid(false);
         ticketRepositoryPort.saveTicket(ticket);
 
         ticketEventPublisher.publishTicketUsed(event);

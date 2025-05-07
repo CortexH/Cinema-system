@@ -21,9 +21,9 @@ public class RoomMapper {
         RoomIdVO roomId = RoomIdVO.from(entity.getId());
 
         List<Seat> domainSeats = entity.getSeats() != null ?
-                entity.getSeats().stream()
-                        .map(SeatMapper::toDomain).toList()
-                : Collections.emptyList();
+                new ArrayList<>(entity.getSeats().stream()
+                        .map(SeatMapper::toDomain).toList())
+                : new ArrayList<>(Collections.emptyList());
 
 
         return new Room(roomId, entity.getName(), domainSeats);
@@ -34,7 +34,6 @@ public class RoomMapper {
         if(domain == null){
             return null;
         }
-
 
         RoomEntity entity = RoomEntity.builder()
                 .id(domain.getRoomId().value())

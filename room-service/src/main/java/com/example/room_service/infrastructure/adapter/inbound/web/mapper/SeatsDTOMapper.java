@@ -11,7 +11,8 @@ public class SeatsDTOMapper {
         return new SeatResponse(
                 seat.getSeatId().value().toString(),
                 seat.getSeatNumber(),
-                seat.getAvailable()
+                seat.getAvailable(),
+                seat.getInUse()
         );
 
     }

@@ -2,12 +2,12 @@ package com.example.room_service.application.dto.event;
 
 import java.time.Instant;
 
-public record SeatReleasedEvent(
+public record RoomCreatedEventDTO(
         String roomId,
-        String seatNumber,
-
-        // String userId,
+        String roomName,
+        int totalSeats,
 
         Instant timestamp
+
 ) {
 }

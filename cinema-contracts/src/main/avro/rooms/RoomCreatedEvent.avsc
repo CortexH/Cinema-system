@@ -1,0 +1,31 @@
+{
+  "type": "record",
+  "name": "RoomCreatedEvent",
+  "namespace": "br.com.cinemaSYS.events.room",
+  "doc": "Evento disparado quando uma sala é criada com sucesso",
+  "fields": [
+    {
+      "name": "roomId",
+      "type": "string",
+      "doc": "id da sala criada. NÃO É O MESMO QUE 'NOME' DA SALA"
+    },
+    {
+      "name": "roomName",
+      "type": "string",
+      "doc": "nome da sala criada. não é o mesmo que 'id' da sala"
+    },
+    {
+      "name": "totalSeats",
+      "type": "int",
+      "doc": "quantidade de poltronas na sala"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "momento exato em que o evento foi lançado"
+    }
+  ]
+}

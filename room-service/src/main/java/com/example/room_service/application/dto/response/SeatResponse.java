@@ -5,6 +5,7 @@ import com.example.room_service.domain.enums.SeatState;
 public record SeatResponse(
         String id,
         String seat_number,
-        SeatState state
+        SeatState state,
+        Boolean in_use
 ) {
 }

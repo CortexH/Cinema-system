@@ -1,0 +1,30 @@
+{
+  "type": "record",
+  "name": "TicketCreatedEvent",
+  "namespace": "br.com.cinemaSYS.events.ticket",
+  "doc": "Evento disparado quando um ticket é criado com sucesso",
+  "fields": [
+    {
+      "name": "roomId",
+      "type": "string",
+      "doc": "Id da sala que o ticket foi criado",
+      "default": "default"
+    },
+    {
+      "name": "seats",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "doc": "Lista com as poltronas da sala"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "tempo exato em long que o evento foi lançado"
+    }
+  ]
+}

@@ -1,24 +1,24 @@
 package com.example.room_service.infrastructure.adapter.outbound.kafka;
 
-import com.example.room_service.application.dto.event.RoomCreatedEvent;
-import com.example.room_service.application.dto.event.SeatReleasedEvent;
-import com.example.room_service.application.dto.event.SeatReservedEvent;
+import br.com.cinemaSYS.events.room.RoomCreatedEvent;
+import com.example.room_service.application.dto.event.RoomCreatedEventDTO;
+import com.example.room_service.application.dto.event.SeatReleasedEventDTO;
+import com.example.room_service.application.dto.event.SeatReservedEventDTO;
 import com.example.room_service.domain.port.out.RoomEventPublisherPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, RoomCreatedEvent> kafkaTemplate;
 
     @Value("${kafka.topic.room.created}")
     private String roomCreatedTopic;
@@ -30,16 +30,19 @@ public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
     private String seatReleasedTopic;
 
     @Override
-    public void publishRoomCreated(RoomCreatedEvent event) {
-
+    public void publishRoomCreated(RoomCreatedEventDTO event) {
         try{
-            Message<RoomCreatedEvent> message = MessageBuilder
-                    .withPayload(event)
-                    .setHeader(KafkaHeaders.TOPIC, roomCreatedTopic)
-                    .setHeader(KafkaHeaders.KEY, event.roomId())
+
+            RoomCreatedEvent avroEvent = RoomCreatedEvent.newBuilder()
+                    .setRoomId(event.roomId())
+                    .setTimestamp(Instant.now())
+                    .setRoomName(event.roomName())
+                    .setTotalSeats(event.totalSeats())
                     .build();
 
-            kafkaTemplate.send(message);
+            String key = avroEvent.getRoomId();
+
+            kafkaTemplate.send(roomCreatedTopic, key, avroEvent);
 
         } catch (Exception e) {
             log.info("Falha ao criar sala :: {}", e.getMessage());
@@ -47,17 +50,11 @@ public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
     }
 
     @Override
-    public void publishSeatReserved(SeatReservedEvent event) {
+    public void publishSeatReserved(SeatReservedEventDTO event) {
         try{
 
-            String messageKey = event.roomId() + "-" + event.seatNumber();
-            Message<SeatReservedEvent> message = MessageBuilder
-                    .withPayload(event)
-                    .setHeader(KafkaHeaders.TOPIC, seatReservedTopic)
-                    .setHeader(KafkaHeaders.KEY, messageKey)
-                    .build();
 
-            kafkaTemplate.send(message);
+
         } catch (Exception e) {
             log.info("Falha ao reservar assento :: {}", e.getMessage());
         }
@@ -65,17 +62,8 @@ public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
     }
 
     @Override
-    public void publishSeatReleased(SeatReleasedEvent event) {
+    public void publishSeatReleased(SeatReleasedEventDTO event) {
         try{
-            String key = event.roomId() + "-" + event.seatNumber();
-
-            Message<SeatReleasedEvent> message = MessageBuilder
-                    .withPayload(event)
-                    .setHeader(KafkaHeaders.TOPIC, seatReleasedTopic)
-                    .setHeader(KafkaHeaders.KEY, key)
-                    .build();
-
-            kafkaTemplate.send(message);
 
         } catch (Exception e) {
             log.info("Falha ao liberar assento :: {}", e.getMessage());

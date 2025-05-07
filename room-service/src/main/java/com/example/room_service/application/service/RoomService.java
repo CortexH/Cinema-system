@@ -1,8 +1,8 @@
 package com.example.room_service.application.service;
 
-import com.example.room_service.application.dto.event.RoomCreatedEvent;
-import com.example.room_service.application.dto.event.SeatReleasedEvent;
-import com.example.room_service.application.dto.event.SeatReservedEvent;
+import com.example.room_service.application.dto.event.RoomCreatedEventDTO;
+import com.example.room_service.application.dto.event.SeatReleasedEventDTO;
+import com.example.room_service.application.dto.event.SeatReservedEventDTO;
 import com.example.room_service.domain.enums.SeatState;
 import com.example.room_service.domain.exception.RoomAlreadyExistsException;
 import com.example.room_service.domain.exception.RoomNotFoundException;
@@ -42,7 +42,7 @@ public class RoomService implements RoomUseCase {
 
         Room savedRoom = repositoryPort.save(room);
 
-        eventPublisherPort.publishRoomCreated(new RoomCreatedEvent(
+        eventPublisherPort.publishRoomCreated(new RoomCreatedEventDTO(
                 room.getRoomId().value().toString(), room.getName(),
                 room.getSeats().size(), Instant.now()
         ));
@@ -55,6 +55,11 @@ public class RoomService implements RoomUseCase {
     public Optional<Room> findRoomById(RoomIdVO id) {
         Objects.requireNonNull(id, "'id' não pode ser nulo");
         return repositoryPort.findById(id);
+    }
+
+    @Override
+    public Optional<Room> findRoomByName(String name) {
+        return repositoryPort.findRoomByName(name);
     }
 
     @Transactional(readOnly = true)
@@ -88,14 +93,14 @@ public class RoomService implements RoomUseCase {
     }
 
     @Override
-    public Boolean validateAllSeatsInARange(String roomName, List<String> seatIds) {
-        repositoryPort.findRoomByName(roomName)
+    public Boolean validateAllSeatsInARange(RoomIdVO roomId, List<String> seatIds) {
+        Room room = repositoryPort.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("Sala com o nome providenciado não encontrada"));
 
-        List<Seat> seats = repositoryPort.findAllSeatsInRange(roomName, seatIds);
+        List<Seat> seats = room.getSeats().stream().filter(i -> seatIds.contains(i.getSeatNumber())).toList();
 
         seats.forEach(i -> {
-            if(!(i.getAvailable().equals(SeatState.FREE)) || i.getInUse()){
+            if(!i.getAvailable().equals(SeatState.FREE) || i.getInUse()){
                 throw new SeatNotAvailableException("Poltrona não está liberada");
             }
         });
@@ -105,46 +110,50 @@ public class RoomService implements RoomUseCase {
 
     @Transactional
     @Override
-    public void reserve(RoomIdVO roomIdVO, String seatId) {
+    public void reserve(RoomIdVO roomIdVO, List<String> allSeats) {
         Objects.requireNonNull(roomIdVO, "o id da sala não pode ser nulo");
-        Objects.requireNonNull(seatId, "o id da poltrona não pode ser nulo");
+        Objects.requireNonNull(allSeats, "o id da poltrona não pode ser nulo");
 
         Room room = repositoryPort.findById(roomIdVO)
                 .orElseThrow(() -> new RoomNotFoundException("Sala com o id providenciado não encontrada"));
 
-        Seat seat = room.findSeatByNumber(seatId)
-                .orElseThrow(() -> new SeatNotFoundException("Poltrona com o número providenciado não encontrada"));
 
-        room.reserveSeat(seatId);
+        allSeats.forEach(i -> {
+            room.findSeatByNumber(i)
+                    .orElseThrow(() -> new SeatNotFoundException("Poltrona com o número " + i + " não encontrada"));
+        });
+
+        room.reserveSeats(allSeats);
 
         repositoryPort.save(room);
 
-        // talvez seja melhor inserir um DTO de evento aqui.
-        eventPublisherPort.publishSeatReserved(new SeatReservedEvent(
-                seat.getSeatNumber(), roomIdVO.value().toString(), Instant.now()
+        eventPublisherPort.publishSeatReserved(new SeatReservedEventDTO(
+                allSeats, roomIdVO.value().toString(), Instant.now()
         ));
 
     }
 
     @Override
     @Transactional
-    public void releaseSeat(RoomIdVO roomIdVO, String seatId) {
+    public void releaseSeat(RoomIdVO roomIdVO, List<String> allSeats) {
         Objects.requireNonNull(roomIdVO, "o id da sala não pode ser nulo");
-        Objects.requireNonNull(seatId, "o id da poltrona não pode ser nulo");
+        Objects.requireNonNull(allSeats, "o id da poltrona não pode ser nulo");
 
         Room room = repositoryPort.findById(roomIdVO)
                 .orElseThrow(() -> new RoomNotFoundException("Sala com o id providenciado não encontrada"));
 
-        Seat seat = room.findSeatByNumber(seatId)
-                .orElseThrow(() -> new SeatNotFoundException("Poltrona com o número providenciado não encontrada"));
 
-        room.releaseSeat(seatId);
+        allSeats.forEach(i -> {
+            room.findSeatByNumber(i)
+                    .orElseThrow(() -> new SeatNotFoundException("Poltrona com o número " + i + " não encontrada"));
+        });
+
+        room.releaseSeats(allSeats);
 
         repositoryPort.save(room);
 
-        // talvez seja melhor inserir um DTO de evento aqui.
-        eventPublisherPort.publishSeatReleased(new SeatReleasedEvent(
-                roomIdVO.value().toString(), seat.getSeatNumber(), Instant.now()
+        eventPublisherPort.publishSeatReleased(new SeatReleasedEventDTO(
+                roomIdVO.value().toString(), allSeats, Instant.now()
         ));
 
     }
@@ -152,27 +161,54 @@ public class RoomService implements RoomUseCase {
     @Transactional
     @Override
     public void holdSeats(RoomIdVO roomId, List<String> seatNumbers){
-        List<Seat> seats = repositoryPort.findAllSeatsInRange(roomId.value().toString(), seatNumbers);
+        Room room = repositoryPort.findById(roomId)
+                .orElseThrow(() -> new RoomNotFoundException("Sala com id especificado não encontrado"));
 
-        seats.stream().map(i -> {
-            if(!i.getInUse() || !i.getAvailable().equals(SeatState.FREE)){
-                throw new SeatNotAvailableException(("A poltrona de número " + i.getSeatNumber() + " não está liberada"));
-            }
-            i.setAvailable(SeatState.HOLD);
-            return i;
-        }).toList();
+         room.holdSeats(seatNumbers);
 
-
-
+        repositoryPort.save(room);
     }
 
     @Override
     public void lockSeats(RoomIdVO roomId, List<String> seatNumbers) {
 
+        Room room = repositoryPort.findById(roomId)
+                .orElseThrow(() -> new RoomNotFoundException("Sala com id especificado não encontrado"));
+
+        room.lockSeats(seatNumbers);
+
+        repositoryPort.save(room);
+
     }
 
     @Override
     public void unlockSeats(RoomIdVO roomId, List<String> seatNumbers) {
+        Room room = repositoryPort.findById(roomId)
+                .orElseThrow(() -> new RoomNotFoundException("Sala com id especificado não encontrado"));
+
+        room.unlockSeats(seatNumbers);
+
+        repositoryPort.save(room);
+    }
+
+    @Transactional
+    @Override
+    public void deleteRoom(RoomIdVO roomIdVO) {
+        repositoryPort.deleteById(roomIdVO);
+    }
+
+    @Transactional
+    @Override
+    public void deleteSeat(RoomIdVO roomId, List<String> seatNumber) {
+
+        Room room = repositoryPort.findById(roomId)
+                .orElseThrow(() -> new RoomNotFoundException("A sala com id especificado não existe"));
+
+        for(String num : seatNumber){
+            room.deleteSeat(num);
+        }
+
+        repositoryPort.save(room);
 
     }
 
