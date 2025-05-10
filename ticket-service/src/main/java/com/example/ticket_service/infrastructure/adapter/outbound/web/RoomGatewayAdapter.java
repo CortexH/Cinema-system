@@ -45,7 +45,26 @@ public class RoomGatewayAdapter implements RoomGateway {
     }
 
     @Override
-    public Boolean lockSeat(String roomName, String seatNumbers) {
-        return null;
+    public Boolean lockSeat(String roomId, String seatNumbers) {
+
+        return webClientRoomGateway.put()
+                .uri("/api/v1/rooms/{roomId}/seat/{seatId}/lock", roomId, seatNumbers)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
+                    clientResponse.bodyToMono(GenericErrorDTO.class)
+                            .flatMap(error -> {
+                                String message = null;
+                                if(error != null && error.message() != null && error.error() != null){
+                                    message = error.message();
+                                }
+                                return Mono.<Throwable>error(new ReserveValidationFailedException(message));
+                            })
+                            .switchIfEmpty(Mono.error(new ReserveValidationFailedException(
+                                    "Erro na validação do assento. Sem resposta ou corpo."
+                            )))
+                )
+                .bodyToMono(Void.class)
+                .thenReturn(true)
+                .block();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ticket_service.domain.model;
 
+import com.example.ticket_service.domain.exception.InvalidTicketException;
 import com.example.ticket_service.domain.valueObject.ExpireDateVO;
 import com.example.ticket_service.domain.valueObject.QRCodeVO;
 import com.example.ticket_service.domain.valueObject.TicketIdVO;
@@ -27,11 +28,13 @@ public class Ticket {
 
     private Boolean valid;
 
+    private Boolean inUse;
+
     public Ticket(
             TicketIdVO id, QRCodeVO qRCode,
             String room, String seat, String movie,
             Boolean accessibility, LocalDateTime movieTime,
-            ExpireDateVO expireTime, Boolean valid
+            ExpireDateVO expireTime, Boolean valid, Boolean inUse
     ) {
 
         //movieTime.format(DateTimeFormatter.ofPattern("dd/MM:yyyy hh:mm:ss"));
@@ -45,6 +48,7 @@ public class Ticket {
         this.movieTime = movieTime;
         this.expireTime = expireTime;
         this.valid = valid;
+        this.inUse = inUse;
     }
 
     public Ticket(
@@ -57,19 +61,25 @@ public class Ticket {
         this.movie = movie;
         this.accessibility = accessibility;
         this.movieTime = movieTime;
+        this.inUse = false;
     }
 
     public Boolean validateTicketExpiration(){
         return !this.expireTime.time().isAfter(LocalDateTime.now());
     }
 
-    public void invalidateTicket(){
-        if(this.valid) {
-            this.valid = false;
-            return;
+    public void conciliate(){
+
+        if(validateTicketExpiration()){
+            throw new InvalidTicketException("Ticket expirado");
         }
 
-        throw new IllegalArgumentException("Ticket já está inválido.");
+        if(!this.valid){
+            throw new InvalidTicketException("Ticket inválido");
+        }
+
+        this.valid = false;
+        this.inUse = true;
 
     }
 
@@ -84,7 +94,6 @@ public class Ticket {
     public String getRoom() {
         return room;
     }
-
 
     public String getSeat() {
         return seat;
@@ -116,5 +125,13 @@ public class Ticket {
 
     public void setValid(Boolean valid) {
         this.valid = valid;
+    }
+
+    public Boolean getInUse() {
+        return inUse;
+    }
+
+    public void setInUse(Boolean inUse) {
+        this.inUse = inUse;
     }
 }

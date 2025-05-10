@@ -130,7 +130,7 @@ public class RoomController {
         RoomIdVO roomIdVO = RoomIdVO.from(roomId);
 
         roomUseCase.lockSeats(roomIdVO, List.of(seatId));
-
+        
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

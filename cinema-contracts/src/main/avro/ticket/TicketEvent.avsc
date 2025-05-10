@@ -1,0 +1,51 @@
+{
+  "type": "record",
+  "name": "TicketEvent",
+  "namespace": "br.com.cinemaSYS.events.ticket",
+  "doc": "Evento disparado quando acontece algo com o ticket",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Id do evento. Deve ser um UUID gerado dinamicamente"
+    },
+    {
+      "name": "eventType",
+      "type": {
+        "type": "enum",
+        "name": "TicketEventType",
+        "symbols": ["TICKET_REQUESTED", "TICKET_CREATED", "TICKET_USED", "TICKET_CREATION_FAILED"]
+      },
+      "doc": "Tipo do evento"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Horário exato em que o evento foi lançado"
+    },
+    {
+      "name": "seats",
+      "type": ["null", {
+        "type": "array",
+        "items": "string"
+      }],
+      "default": null,
+      "doc": "Número das poltronas afetadas pelo evento"
+    },
+    {
+      "name": "roomId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID da sala afetada pelo evento"
+    },
+    {
+      "name": "reason",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Motivo pelo qual ocorreu o evento. Atualmente utilizando apenas para falha."
+    }
+  ]
+}

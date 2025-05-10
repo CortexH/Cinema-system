@@ -1,9 +1,9 @@
 package com.example.room_service.infrastructure.adapter.outbound.kafka;
 
 import br.com.cinemaSYS.events.room.RoomCreatedEvent;
-import com.example.room_service.application.dto.event.RoomCreatedEventDTO;
-import com.example.room_service.application.dto.event.SeatReleasedEventDTO;
-import com.example.room_service.application.dto.event.SeatReservedEventDTO;
+import com.example.room_service.application.dto.event.publisher.RoomCreatedEventDTO;
+import com.example.room_service.application.dto.event.publisher.SeatReleasedEventDTO;
+import com.example.room_service.application.dto.event.publisher.SeatReservedEventDTO;
 import com.example.room_service.domain.port.out.RoomEventPublisherPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,7 @@ public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
 
             String key = avroEvent.getRoomId();
 
-            kafkaTemplate.send(roomCreatedTopic, key, avroEvent);
+            //kafkaTemplate.send(roomCreatedTopic, key, avroEvent);
 
         } catch (Exception e) {
             log.info("Falha ao criar sala :: {}", e.getMessage());

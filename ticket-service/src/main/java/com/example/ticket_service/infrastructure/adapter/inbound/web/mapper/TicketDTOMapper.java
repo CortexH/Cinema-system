@@ -11,9 +11,11 @@ public class TicketDTOMapper {
     public static TicketResponse toResponse(Ticket ticket){
         return new TicketResponse(
                 ticket.getId().value(),
-                ticket.getqRCode().code(), ticket.getMovie(),
+                (ticket.getqRCode() != null ? ticket.getqRCode().code() : null),
+                ticket.getMovie(),
                 ticket.getMovieTime(), ticket.getRoom(),
-                ticket.getSeat(), ticket.getAccessibility()
+                ticket.getSeat(), ticket.getValid(), ticket.getInUse(),
+                ticket.getAccessibility()
         );
     }
 
@@ -22,7 +24,8 @@ public class TicketDTOMapper {
                 TicketIdVO.from(ticket.id()), QRCodeVO.from(ticket.qrCode()),
                 ticket.room(), ticket.seat(), ticket.movie(),
                 ticket.accessibility(), ticket.movie_time(),
-                ExpireDateVO.generate(ticket.movie_time()), null
+                ExpireDateVO.generate(ticket.movie_time()), ticket.valid(),
+                ticket.in_use()
         );
     }
 

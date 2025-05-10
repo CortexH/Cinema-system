@@ -15,7 +15,8 @@ public class TicketMapper {
                 TicketIdVO.from(entity.getId()),null,
                 entity.getRoomId(), entity.getSeatId(), entity.getMovie(),
                 entity.getAccessibility(), entity.getMovieTime(),
-                ExpireDateVO.from(entity.getExpireTime()), entity.getValid()
+                ExpireDateVO.from(entity.getExpireTime()), entity.getValid(),
+                entity.getInUse()
         );
     }
 
@@ -24,12 +25,12 @@ public class TicketMapper {
                 .id(entity.getId().value())
                 .movie(entity.getMovie())
                 .seatId(entity.getSeat())
-                .valid(entity.validateTicketExpiration())
-                //.qrCode(entity.getqRCode().code())
+                .valid(entity.getValid())
                 .accessibility(entity.getAccessibility())
                 .expireTime(entity.getExpireTime().time())
                 .roomId(entity.getRoom())
                 .movieTime(entity.getMovieTime())
+                .inUse(entity.getInUse())
                 .build();
     }
 

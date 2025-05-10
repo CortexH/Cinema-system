@@ -3,12 +3,14 @@ package com.example.ticket_service.infrastructure.adapter.outbound.persistence.r
 import com.example.ticket_service.domain.exception.InvalidTicketException;
 import com.example.ticket_service.domain.model.Ticket;
 import com.example.ticket_service.domain.port.out.TicketRepositoryPort;
+import com.example.ticket_service.domain.valueObject.TicketIdVO;
 import com.example.ticket_service.infrastructure.adapter.outbound.persistence.mapper.TicketMapper;
 import com.example.ticket_service.infrastructure.adapter.outbound.persistence.repository.repository.SpringTicketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -18,11 +20,9 @@ public class TicketRepositoryAdapter implements TicketRepositoryPort {
     private final SpringTicketRepository repository;
 
     @Override
-    public Ticket findTicketById(String id) {
-        return TicketMapper.toDomain(
-                repository.findById(UUID.fromString(id))
-                        .orElseThrow(() -> new InvalidTicketException("Ticket inválido"))
-        );
+    public Optional<Ticket> findTicketById(TicketIdVO id) {
+        return repository.findById(id.value())
+                .map(TicketMapper::toDomain);
     }
 
     @Override

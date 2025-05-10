@@ -6,8 +6,8 @@ public record MovieInformationDTO(
         String name,
         LocalDateTime time,
         Boolean subtitles,
-        Integer ageGroup,
-        String ageGroupReason,
+        Integer ageGroup, // faixa etária
+        String ageGroupReason, // motivo da faixa etária
         Boolean accessibility
 ) {
 

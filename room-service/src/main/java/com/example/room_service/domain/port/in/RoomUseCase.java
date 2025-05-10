@@ -21,6 +21,8 @@ public interface RoomUseCase {
 
     Boolean validateAllSeatsInARange(RoomIdVO roomId, List<String> seatIds);
 
+    void restartSeats(RoomIdVO roomIdVO, List<String> seatIds);
+
     void deleteRoom(RoomIdVO roomIdVO);
     void deleteSeat(RoomIdVO roomId, List<String> seatNumber);
 

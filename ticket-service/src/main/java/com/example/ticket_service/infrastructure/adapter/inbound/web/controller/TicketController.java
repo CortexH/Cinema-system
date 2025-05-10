@@ -3,7 +3,10 @@ package com.example.ticket_service.infrastructure.adapter.inbound.web.controller
 import com.example.ticket_service.application.dto.request.GenerateTicketRequest;
 import com.example.ticket_service.application.dto.response.TicketConciliationResponse;
 import com.example.ticket_service.application.dto.response.TicketResponse;
+import com.example.ticket_service.domain.model.Ticket;
 import com.example.ticket_service.domain.port.in.TicketUseCase;
+import com.example.ticket_service.domain.valueObject.TicketIdVO;
+import com.example.ticket_service.infrastructure.adapter.inbound.web.mapper.TicketDTOMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequestMapping("/api/v1/tickets")
 @RestController
@@ -29,7 +33,7 @@ public class TicketController {
         ), HttpStatus.OK);
     }
 
-    @PostMapping("/conciliate/{ticketId}")
+    @GetMapping("/conciliate/{ticketId}")
     public ResponseEntity<TicketConciliationResponse> conciliateTicket(
             @PathVariable("ticketId") String ticketId
     ){
@@ -38,4 +42,19 @@ public class TicketController {
                 HttpStatus.OK
         );
     }
+
+    @GetMapping("/get/{ticketId}")
+    public ResponseEntity<TicketResponse> getTicketById(
+            @PathVariable("ticketId") String ticketId
+    ){
+        TicketIdVO ticketIdVO = TicketIdVO.from(ticketId);
+
+        Optional<Ticket> ticket = ticketUseCase.findTicketById(ticketIdVO);
+
+        return ticket.
+                map(TicketDTOMapper::toResponse)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
 }

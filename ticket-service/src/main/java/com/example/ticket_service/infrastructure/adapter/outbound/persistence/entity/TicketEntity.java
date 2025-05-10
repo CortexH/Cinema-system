@@ -39,4 +39,7 @@ public class TicketEntity {
 
     private Boolean valid;
 
+    @Column(name = "in_use")
+    private Boolean inUse;
+
 }

@@ -28,8 +28,7 @@ public class Seat {
 
     public Seat(
             SeatIdVO id, RoomIdVO rId,
-            String seatNum, SeatState state
-    ){
+            String seatNum, SeatState state){
         this.seatIdVO = Objects.requireNonNull(id, "'seatId' não pode ser nulo");
         this.roomIdVO = Objects.requireNonNull(rId, "'roomId' não pode ser nulo");
         this.seatNumber = Objects.requireNonNull(seatNum, "'seatNumber' não pode ser nulo");
@@ -39,16 +38,53 @@ public class Seat {
     }
 
     public void reserve(){
-        if(!(this.state == SeatState.FREE)){
-            throw new SeatNotAvailableException("assento não está disponível!");
+        if(this.state != SeatState.FREE){
+            throw new SeatNotAvailableException("Poltrona não está disponível!");
         }
         this.state = SeatState.BLOCKED;
+
     }
 
     public void release(){
+        if(this.state != SeatState.BLOCKED){
+            throw new SeatNotAvailableException("Poltrona não está bloqueada!");
+        }
+
         this.state = SeatState.FREE;
+
     }
 
+    public Seat lock(){
+
+        if(this.getInUse()){
+            throw new SeatNotAvailableException(("A poltrona de número " + this.getSeatNumber() + " já está em uso"));
+        }
+
+        this.setInUse(false);
+        return this;
+    }
+
+    public Seat unlock(){
+
+        if(!this.getInUse()){
+            throw new SeatNotAvailableException(("A poltrona de número " + this.getSeatNumber() + " não está liberada"));
+        }
+
+        this.setInUse(true);
+        return this;
+    }
+
+    public Seat reset(){
+        this.state = SeatState.FREE;
+        this.inUse = false;
+
+        return this;
+    }
+
+    public Boolean validate(){
+
+        return this.getAvailable().equals(SeatState.FREE) && !this.getInUse();
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -19,7 +19,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ExpiredTicketException.class)
-    public static ResponseEntity<ErrorResponse> handleExpiredTicketException(ExpiredTicketException ex, HttpServletRequest request){
+    public ResponseEntity<ErrorResponse> handleExpiredTicketException(ExpiredTicketException ex, HttpServletRequest request){
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
                 new ErrorResponse(
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidTicketException.class)
-    public static ResponseEntity<ErrorResponse> handleInvalidTicketException(InvalidTicketException ex, HttpServletRequest request){
+    public ResponseEntity<ErrorResponse> handleInvalidTicketException(InvalidTicketException ex, HttpServletRequest request){
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
                 new ErrorResponse(
@@ -40,8 +40,19 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(PaymentFailedException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentFailedException(PaymentFailedException ex, HttpServletRequest request){
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(), HttpStatus.PAYMENT_REQUIRED.value(),
+                HttpStatus.PAYMENT_REQUIRED.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.PAYMENT_REQUIRED);
+    }
+
     @ExceptionHandler(ReserveValidationFailedException.class)
-    public static ResponseEntity<ErrorResponse> handleReserveValidationFailedException(ReserveValidationFailedException ex, HttpServletRequest request){
+    public ResponseEntity<ErrorResponse> handleReserveValidationFailedException(ReserveValidationFailedException ex, HttpServletRequest request){
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 new ErrorResponse(
@@ -52,7 +63,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SeatAlreadyReservedException.class)
-    public static ResponseEntity<ErrorResponse> seatAlreadyReservedException(SeatAlreadyReservedException ex, HttpServletRequest request){
+    public ResponseEntity<ErrorResponse> handleSeatAlreadyReservedException(SeatAlreadyReservedException ex, HttpServletRequest request){
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
                 new ErrorResponse(
@@ -63,7 +74,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(TicketNotFoundException.class)
-    public static ResponseEntity<ErrorResponse> seatAlreadyReservedException(TicketNotFoundException ex, HttpServletRequest request){
+    public ResponseEntity<ErrorResponse> handleTicketNotFoundException(TicketNotFoundException ex, HttpServletRequest request){
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 new ErrorResponse(
@@ -72,18 +83,7 @@ public class GlobalExceptionHandler {
                         request.getRequestURI()
                 ));
     }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                "Ocorreu um erro interno inesperado: " + ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
+    
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request){
 
@@ -104,6 +104,17 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                "Ocorreu um erro interno inesperado: " + ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

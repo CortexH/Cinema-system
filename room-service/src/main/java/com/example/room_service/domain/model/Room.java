@@ -117,11 +117,8 @@ public class Room {
             if(!seatNumbers.contains(i.getSeatNumber())){
                 return;
             }
-            if(i.getInUse() || !i.getAvailable().equals(SeatState.BLOCKED)){
-                throw new SeatNotAvailableException(("A poltrona de número " + i.getSeatNumber() + " não está liberada"));
-            }
-            i.setInUse(true);
-            usedSeats.add(i);
+            usedSeats.add(i.lock());
+
         });
 
         return usedSeats;
@@ -135,14 +132,35 @@ public class Room {
             if(!seatNumbers.contains(i.getSeatNumber())){
                 return;
             }
-            if(!i.getInUse()){
-                throw new SeatNotAvailableException(("A poltrona de número " + i.getSeatNumber() + " não está liberada"));
-            }
-            i.setInUse(false);
-            usedSeats.add(i);
+            usedSeats.add(i.unlock());
+
         });
 
         return usedSeats;
+    }
+
+    public void resetSeats(List<String> seatNumbers){
+
+        this.seats.forEach(i -> {
+            if(!seatNumbers.contains(i.getSeatNumber())){
+                return;
+            }
+            i.reset();
+        });
+    }
+
+    public Boolean validateSeats(List<String> seatNumbers){
+
+        this.seats.forEach(i -> {
+            if(!seatNumbers.contains(i.getSeatNumber())){
+                return;
+            }
+            if(!i.validate()){
+                throw new SeatNotAvailableException("Poltrona não está liberada");
+            }
+        });
+
+        return true;
     }
 
     public void deleteSeat(String number){

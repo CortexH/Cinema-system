@@ -6,7 +6,7 @@ import java.util.List;
 public record TicketCreationFailedEventDTO(
         String reason,
         LocalDateTime timestamp,
-        List<String> seat,
+        List<String> seats,
         String room
 ) {
 }

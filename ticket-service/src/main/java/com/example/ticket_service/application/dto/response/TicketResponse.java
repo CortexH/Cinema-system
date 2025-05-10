@@ -14,6 +14,8 @@ public record TicketResponse(
         String room,
         String seat,
 
+        Boolean valid,
+        Boolean in_use,
         Boolean accessibility
 
 ) {

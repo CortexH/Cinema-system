@@ -1,12 +1,10 @@
 package com.example.room_service.application.service;
 
-import com.example.room_service.application.dto.event.RoomCreatedEventDTO;
-import com.example.room_service.application.dto.event.SeatReleasedEventDTO;
-import com.example.room_service.application.dto.event.SeatReservedEventDTO;
-import com.example.room_service.domain.enums.SeatState;
+import com.example.room_service.application.dto.event.publisher.RoomCreatedEventDTO;
+import com.example.room_service.application.dto.event.publisher.SeatReleasedEventDTO;
+import com.example.room_service.application.dto.event.publisher.SeatReservedEventDTO;
 import com.example.room_service.domain.exception.RoomAlreadyExistsException;
 import com.example.room_service.domain.exception.RoomNotFoundException;
-import com.example.room_service.domain.exception.SeatNotAvailableException;
 import com.example.room_service.domain.exception.SeatNotFoundException;
 import com.example.room_service.domain.model.Room;
 import com.example.room_service.domain.model.Seat;
@@ -89,7 +87,6 @@ public class RoomService implements RoomUseCase {
         }
 
         return opRoom.get().findSeatByNumber(seatId);
-
     }
 
     @Override
@@ -97,15 +94,18 @@ public class RoomService implements RoomUseCase {
         Room room = repositoryPort.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("Sala com o nome providenciado não encontrada"));
 
-        List<Seat> seats = room.getSeats().stream().filter(i -> seatIds.contains(i.getSeatNumber())).toList();
+        return room.validateSeats(seatIds);
+    }
 
-        seats.forEach(i -> {
-            if(!i.getAvailable().equals(SeatState.FREE) || i.getInUse()){
-                throw new SeatNotAvailableException("Poltrona não está liberada");
-            }
-        });
+    @Override
+    public void restartSeats(RoomIdVO roomIdVO, List<String> seatIds) {
 
-        return true;
+        Room room = repositoryPort.findById(roomIdVO)
+                .orElseThrow(() -> new RoomNotFoundException("Sala com o nome providenciado não encontrada"));
+
+        room.resetSeats(seatIds);
+
+        repositoryPort.save(room);
     }
 
     @Transactional
@@ -178,7 +178,6 @@ public class RoomService implements RoomUseCase {
         room.lockSeats(seatNumbers);
 
         repositoryPort.save(room);
-
     }
 
     @Override

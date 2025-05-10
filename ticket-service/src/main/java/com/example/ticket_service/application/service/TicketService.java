@@ -11,6 +11,7 @@ import com.example.ticket_service.application.dto.response.TicketResponse;
 import com.example.ticket_service.domain.exception.ExpiredTicketException;
 import com.example.ticket_service.domain.exception.PaymentFailedException;
 import com.example.ticket_service.domain.exception.SeatAlreadyReservedException;
+import com.example.ticket_service.domain.exception.TicketNotFoundException;
 import com.example.ticket_service.domain.model.Ticket;
 import com.example.ticket_service.domain.port.in.TicketUseCase;
 import com.example.ticket_service.domain.port.out.*;
@@ -26,6 +27,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -43,7 +46,6 @@ public class TicketService implements TicketUseCase {
 
     @Override
     public List<TicketResponse> purchaseTickets(String roomId, List<String> seatNumbers, String paymentToken) {
-
         if(!roomGateway.validateSeatReserveInBatch(roomId, seatNumbers)){
             throw new SeatAlreadyReservedException("Uma das poltronas solicitadas já está reservada");
         }
@@ -57,7 +59,7 @@ public class TicketService implements TicketUseCase {
         if(!paymentGateway.realizePayment(new RealizePaymentDTO(paymentToken))){
 
             TicketCreationFailedEventDTO failedEvent = new TicketCreationFailedEventDTO(
-                    "Payment fail", LocalDateTime.now(),
+                    "Payment failure", LocalDateTime.now(),
                     seatNumbers, roomId
             );
 
@@ -75,7 +77,7 @@ public class TicketService implements TicketUseCase {
             Ticket ticket = new Ticket(
                     TicketIdVO.generate(), null,
                     roomId, seat, movieInfo.name(), movieInfo.accessibility(),
-                    movieInfo.time(), ExpireDateVO.generate(movieInfo.time()), true
+                    movieInfo.time(), ExpireDateVO.generate(movieInfo.time()), true, false
             );
 
             String qr = qrCodeGeneratorPort.generateQR(QRCODE_URL + ticket.getId().value(), 300, 300);
@@ -96,30 +98,36 @@ public class TicketService implements TicketUseCase {
 
     @Override
     public TicketConciliationResponse conciliateTicket(String ticketId) {
-        Ticket ticket = ticketRepositoryPort.findTicketById(ticketId);
 
-        if(ticket.getExpireTime().time().isBefore(LocalDateTime.now())){
-            throw new ExpiredTicketException("Ticket expirado");
-        }
+        Objects.requireNonNull(ticketId, "'ticketId' não pode ser nulo");
+
+        Ticket ticket = ticketRepositoryPort.findTicketById(TicketIdVO.from(ticketId))
+                .orElseThrow(() -> new TicketNotFoundException("Ticket com id especificado não encontrado"));
 
         if(!roomGateway.lockSeat(ticket.getRoom(), ticket.getSeat())){
             throw new ExpiredTicketException("Ticket expirado");
         }
+
+        ticket.conciliate();
+
+        ticketRepositoryPort.saveTicket(ticket);
 
         TicketUsedEventDTO event = new TicketUsedEventDTO(
                 Instant.now(), ticket.getRoom(),
                 ticket.getSeat()
         );
 
-
-        ticket.setValid(false);
-        ticketRepositoryPort.saveTicket(ticket);
-
         ticketEventPublisher.publishTicketUsed(event);
 
         return new TicketConciliationResponse(
                 ticket.getSeat(), ticket.getRoom()
         );
+    }
+
+    @Override
+    public Optional<Ticket> findTicketById(TicketIdVO ticketIdVO) {
+        Objects.requireNonNull(ticketIdVO, "'ticketId' não pode ser nulo");
+        return ticketRepositoryPort.findTicketById(ticketIdVO);
     }
 
 }
