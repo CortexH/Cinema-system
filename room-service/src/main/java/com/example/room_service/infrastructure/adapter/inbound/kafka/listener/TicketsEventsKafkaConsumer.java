@@ -57,8 +57,8 @@ public class TicketsEventsKafkaConsumer {
     }
 
     public void handleTicketUsed(TicketUsedEvent event){
-        RoomIdVO roomId = RoomIdVO.from(event.room());
-        roomUseCase.lockSeats(roomId, new ArrayList<>(List.of(event.seat())));
+        //RoomIdVO roomId = RoomIdVO.from(event.room());
+        //roomUseCase.lockSeats(roomId, new ArrayList<>(List.of(event.seat())));
     }
 
 }

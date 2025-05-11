@@ -3,6 +3,7 @@ package com.example.ticket_service.infrastructure.adapter.inbound.web.controller
 import com.example.ticket_service.application.dto.request.GenerateTicketRequest;
 import com.example.ticket_service.application.dto.response.TicketConciliationResponse;
 import com.example.ticket_service.application.dto.response.TicketResponse;
+import com.example.ticket_service.domain.exception.TicketNotFoundException;
 import com.example.ticket_service.domain.model.Ticket;
 import com.example.ticket_service.domain.port.in.TicketUseCase;
 import com.example.ticket_service.domain.valueObject.TicketIdVO;
@@ -54,7 +55,7 @@ public class TicketController {
         return ticket.
                 map(TicketDTOMapper::toResponse)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow(() -> new TicketNotFoundException("Ticket com ID especificado não encontrado"));
     }
 
 }

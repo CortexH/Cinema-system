@@ -3,6 +3,7 @@ package com.example.room_service.infrastructure.adapter.inbound.web.controller;
 import com.example.room_service.application.dto.request.CreateRoomRequestDTO;
 import com.example.room_service.application.dto.response.RoomResponse;
 import com.example.room_service.application.dto.response.SeatResponse;
+import com.example.room_service.domain.exception.SeatNotFoundException;
 import com.example.room_service.domain.model.Room;
 import com.example.room_service.domain.model.Seat;
 import com.example.room_service.domain.port.in.RoomUseCase;
@@ -99,7 +100,7 @@ public class RoomController {
         return seat
                 .map(SeatsDTOMapper::toResponse)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow(() -> new SeatNotFoundException("Poltrona com número especificado não encontrada"));
 
     }
 

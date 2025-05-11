@@ -10,10 +10,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientBean {
 
+    @Value("${application.url.room-service}")
+    private String roomGatewayURL;
+
     @Bean
     public WebClient webClientRoomGateway(WebClient.Builder builder){
         return builder
-                .baseUrl("http://localhost:6969")
+                .baseUrl(roomGatewayURL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }

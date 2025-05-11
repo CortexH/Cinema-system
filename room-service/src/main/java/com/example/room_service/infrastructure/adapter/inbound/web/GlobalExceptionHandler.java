@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@ControllerAdvice()
+@ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RoomNotFoundException.class)
@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     ){
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_EXTENDED.getReasonPhrase(), ex.getMessage(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage(),
                 request.getRequestURI()
         );
 
@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_EXTENDED.getReasonPhrase(), ex.getMessage(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage(),
                 request.getRequestURI()
         );
 

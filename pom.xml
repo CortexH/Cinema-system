@@ -16,6 +16,7 @@
         <module>room-service</module>
         <module>ticket-service</module>
         <module>cinema-contracts</module>
+        <module>movie-service</module>
     </modules>
 
     <parent>

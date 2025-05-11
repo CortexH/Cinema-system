@@ -42,7 +42,7 @@ public class RoomService implements RoomUseCase {
 
         eventPublisherPort.publishRoomCreated(new RoomCreatedEventDTO(
                 room.getRoomId().value().toString(), room.getName(),
-                room.getSeats().size(), Instant.now()
+                room.getSeats().stream().map(Seat::getSeatNumber).toList(), Instant.now()
         ));
 
         return savedRoom;
@@ -175,7 +175,7 @@ public class RoomService implements RoomUseCase {
         Room room = repositoryPort.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("Sala com id especificado não encontrado"));
 
-        room.lockSeats(seatNumbers);
+        room.useSeats(seatNumbers);
 
         repositoryPort.save(room);
     }
@@ -185,7 +185,7 @@ public class RoomService implements RoomUseCase {
         Room room = repositoryPort.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException("Sala com id especificado não encontrado"));
 
-        room.unlockSeats(seatNumbers);
+        room.unUseSeats(seatNumbers);
 
         repositoryPort.save(room);
     }
@@ -193,6 +193,11 @@ public class RoomService implements RoomUseCase {
     @Transactional
     @Override
     public void deleteRoom(RoomIdVO roomIdVO) {
+
+        if(repositoryPort.findById(roomIdVO).isEmpty()){
+            throw new RoomNotFoundException("Sala com ID especificado não encontrada");
+        }
+
         repositoryPort.deleteById(roomIdVO);
     }
 

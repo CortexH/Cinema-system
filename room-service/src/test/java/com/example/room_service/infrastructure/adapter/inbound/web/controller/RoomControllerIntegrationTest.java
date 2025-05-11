@@ -62,7 +62,7 @@ public class RoomControllerIntegrationTest {
                 .andExpect(jsonPath("$.seats").isArray())
                 .andExpect(jsonPath("$.seats", hasSize(expectedSize)))
                 .andExpect(jsonPath("$.seats[0].seat_number").value("A1"))
-                .andExpect(jsonPath("$.seats[0].state").value(SeatState.FREE.name()))
+                .andExpect(jsonPath("$.seats[0].state").value(SeatState.AVAILABLE.name()))
                 .andExpect(jsonPath("$.seats[5].seat_number").value("B1"));
 
         verify(roomEventPublisherPort, times(1)).publishRoomCreated(any(RoomCreatedEventDTO.class));

@@ -7,6 +7,7 @@
 		<groupId>br.com.cinemaSYS</groupId>
 		<artifactId>Sistema-cinema</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>com.example</groupId>
@@ -17,17 +18,17 @@
 	<description>Modulo que gerencia salas e poltronas no serviço de cinema</description>
 	<dependencies>
 		<dependency>
+			<groupId>br.com.cinemaSYS</groupId>
+			<artifactId>cinema-contracts</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.avro</groupId>
 			<artifactId>avro</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.confluent</groupId>
 			<artifactId>kafka-avro-serializer</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>br.com.cinemaSYS</groupId>
-			<artifactId>cinema-contracts</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -109,21 +110,17 @@
 						<!-- Fase onde ele roda: antes de compilar -->
 						<phase>generate-sources</phase>
 						<goals>
-							<!-- O que ele faz: descompacta -->
 							<goal>unpack</goal>
 						</goals>
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<!-- Qual JAR descompactar -->
-									<groupId>br.com.cinemaSYS</groupId> <!-- GroupId do seu pai/contratos -->
+									<groupId>br.com.cinemaSYS</groupId>
 									<artifactId>cinema-contracts</artifactId>
-									<version>${project.version}</version> <!-- Pega a versão do projeto atual -->
+									<version>${project.version}</version>
 									<type>jar</type>
-									<overWrite>true</overWrite> <!-- Sobrescreve se já existir -->
-									<!-- Onde colocar os arquivos extraídos -->
+									<overWrite>true</overWrite>
 									<outputDirectory>${project.build.directory}/dependency-avro</outputDirectory>
-									<!-- O que incluir daquele JAR (só arquivos .avsc) -->
 									<includes>**/*.avsc</includes>
 								</artifactItem>
 							</artifactItems>
@@ -131,33 +128,21 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- =========================================================== -->
-			<!-- PLUGIN 2: GERAR CÓDIGO JAVA A PARTIR DOS .avsc EXTRAÍDOS   -->
-			<!-- =========================================================== -->
 			<plugin>
 				<groupId>org.apache.avro</groupId>
 				<artifactId>avro-maven-plugin</artifactId>
-				<version>1.11.4</version> <!-- Versão consistente com a dependência avro -->
+				<version>1.11.4</version>
 				<executions>
 					<execution>
-						<id>generate-avro-sources</id> <!-- ID da execução -->
-						<!-- Fase onde ele roda: mesma do unpack -->
+						<id>generate-avro-sources</id>
 						<phase>generate-sources</phase>
 						<goals>
-							<!-- O que ele faz: gera código a partir de esquemas -->
 							<goal>schema</goal>
 						</goals>
 						<configuration>
-							<!-- Onde ler os .avsc (pasta onde o plugin anterior extraiu) -->
 							<sourceDirectory>${project.build.directory}/dependency-avro/</sourceDirectory>
-							<!-- Onde gerar o código .java -->
 							<outputDirectory>${project.build.directory}/generated-sources/avro/</outputDirectory>
-							<!-- Usa String em vez de Utf8 (mais fácil) -->
 							<stringType>String</stringType>
-							<!-- Se quiser usar Records Java 16+, descomente -->
-							<!-- <enableDecimalLogicalType>true</enableDecimalLogicalType> -->
-							<!-- <specificRecordGeneration>true</specificRecordGeneration> -->
 						</configuration>
 					</execution>
 				</executions>
@@ -169,15 +154,12 @@
 				<executions>
 					<execution>
 						<id>add-avro-source</id>
-
 						<phase>generate-sources</phase>
 						<goals>
-							<!-- O que ele faz: adiciona um diretório como fonte -->
 							<goal>add-source</goal>
 						</goals>
 						<configuration>
 							<sources>
-								<!-- Qual diretório adicionar (onde o avro-plugin gerou) -->
 								<source>${project.build.directory}/generated-sources/avro/</source>
 							</sources>
 						</configuration>

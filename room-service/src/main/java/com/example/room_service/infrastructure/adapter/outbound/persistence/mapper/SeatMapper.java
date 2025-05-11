@@ -20,7 +20,7 @@ public class SeatMapper {
 
         return new Seat(
                 seatId, roomId, entity.getSeatNumber(),
-                entity.getState()
+                entity.getState(), entity.getBlocked()
         );
     }
 

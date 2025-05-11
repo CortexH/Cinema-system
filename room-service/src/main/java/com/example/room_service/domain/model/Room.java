@@ -56,10 +56,10 @@ public class Room {
 
             if(seats.contains(seat.getSeatNumber())){
 
-                if(seat.getAvailable().equals(SeatState.BLOCKED)){
+                if(seat.getAvailable().equals(SeatState.RESERVED)){
                     throw new SeatNotAvailableException("Poltrona com número " + i + " já está reservada");
                 }
-                seat.setAvailable(SeatState.BLOCKED);
+                seat.setAvailable(SeatState.RESERVED);
                 alteredSeats.add(seat);
             }
         });
@@ -78,10 +78,10 @@ public class Room {
 
             if(seats.contains(seat.getSeatNumber())){
 
-                if(seat.getAvailable().equals(SeatState.FREE)){
+                if(seat.getAvailable().equals(SeatState.AVAILABLE)){
                     throw new SeatNotAvailableException("Poltrona com número " + i + " já está livre");
                 }
-                seat.setAvailable(SeatState.FREE);
+                seat.setAvailable(SeatState.AVAILABLE);
                 alteredSeats.add(seat);
             }
         });
@@ -98,10 +98,10 @@ public class Room {
             if(!seatNumbers.contains(i.getSeatNumber())){
                 return;
             }
-            if(i.getInUse() || !i.getAvailable().equals(SeatState.FREE)){
+            if(i.getInUse() || !i.getAvailable().equals(SeatState.AVAILABLE)){
                 throw new SeatNotAvailableException(("A poltrona de número " + i.getSeatNumber() + " não está liberada"));
             }
-            i.setAvailable(SeatState.HOLD);
+            i.setAvailable(SeatState.HELD);
             usedSeats.add(i);
         });
 
@@ -109,38 +109,29 @@ public class Room {
 
     }
 
-    public List<Seat> lockSeats(List<String> seatNumbers){
-
-        List<Seat> usedSeats = new ArrayList<>();
+    public void useSeats(List<String> seatNumbers){
 
         this.seats.forEach(i -> {
             if(!seatNumbers.contains(i.getSeatNumber())){
                 return;
             }
-            usedSeats.add(i.lock());
+
+            i.lock();
 
         });
-
-        return usedSeats;
     }
 
-    public List<Seat> unlockSeats(List<String> seatNumbers){
-
-        List<Seat> usedSeats = new ArrayList<>();
+    public void unUseSeats(List<String> seatNumbers){
 
         this.seats.forEach(i -> {
             if(!seatNumbers.contains(i.getSeatNumber())){
                 return;
             }
-            usedSeats.add(i.unlock());
-
+            i.unlock();
         });
-
-        return usedSeats;
     }
 
     public void resetSeats(List<String> seatNumbers){
-
         this.seats.forEach(i -> {
             if(!seatNumbers.contains(i.getSeatNumber())){
                 return;
