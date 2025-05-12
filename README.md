@@ -61,3 +61,10 @@ Atualmente, o sistema é composto pelos seguintes microsserviços:
 *  **Comunicação assíncrona:** Utilização de Apache Kafka para a publicação e consumo de eventos de negócio, permitindo o desacoplamento e resiliência entre os serviços.
 *  **Persistência:** Cada microsserviço terá o seu próprio banco de dados dedicado (Princípio "Database per Service"). A tecnologia de banco de dados pode variar por serviço conforme necessidade (ex: relacional para dados transacionais, NoSQL em alguns casos, etc).
 *  **DDD & Hexagonal:** Busca por um domínio rico, separação clara entre o núcleo da aplicação e a infraestrutura (ports and adapters)
+
+## 🎉 Como testar (Em breve)
+
+1. **Necessário**
+   *  **Aplicações:** Docker, Docker compose, Java 21 e alguma ferramenta de teste de API (e.g Postman)
+2. **Como rodar**
+   *  **Em andamento:** Ainda não é possível testar a aplicação, nenhuma atualização foi lançada ao docker hub, em breve estará lá!
