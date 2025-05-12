@@ -1,0 +1,53 @@
+{
+  "type": "record",
+  "name": "RoomEvent",
+  "namespace": "br.com.cinemaSYS.events.room",
+  "doc": "Evento disparado quando alguma ação ocorre com alguma entidade",
+  "fields": [
+    {
+      "name": "roomId",
+      "type": ["null", "string"],
+      "doc": "Id da sala do evento",
+      "default": null
+    },
+    {
+      "name": "roomName",
+      "type": ["null", "string"],
+      "doc": "Nome da sala do evento",
+      "default": null
+    },
+    {
+      "name": "seats",
+      "type": ["null", {
+          "type": "array",
+          "items": "string"
+        }],
+      "doc": "Poltronas respectivas ao evento"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Horário exato em que o evento foi lançado"
+    },
+    {
+      "name": "eventType",
+      "type": {
+        "type": "enum",
+        "name": "RoomEventType",
+        "symbols": [
+          "ROOM_CREATED",
+          "SEAT_HOLD",
+          "SEAT_RESERVED",
+          "SEAT_RELEASED",
+          "SEAT_USED",
+          "SEAT_UNUSED",
+          "SEAT_REMOVED",
+          "ROOM_DELETED"
+        ]
+      }
+    }
+  ]
+}
