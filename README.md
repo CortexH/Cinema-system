@@ -24,16 +24,16 @@ Atualmente, o sistema é composto pelos seguintes microsserviços:
    *  **Responsabilidade:** Gerenciar a disponibilidade de assentos para sessões de filmes agendadas. Mantém o estado de cada assento (Disponível, assegurado e comprado) para uma sessão específica.
    *  **Tecnologias:** Java, Spring Boot, Spring Data JPA (com H2 por enquanto), Spring Kafka (Produtor/Consumidor).
 
-2. **Ticket Service** - 🟢 Em desenvolvimento, mas funcionando
+2. **Ticket Service** - 🌟 **Protótipo Funcional**
    *  **Responsabilidade:** Orquestrar o processo de compra de ingressos, gerenciar ciclo de vida dos tickets e a validação para entrada.
    *  **Tecnologias:** Java, Spring Boot, Spring Data JPA (com H2 por enquanto), Spring Kafka (Produtor/Consumidor), Chamadas API REST para outros serviços.
 
-3. **User Service** - 🚧 A desenvolver
-   *  **Responsabilidade:** Gerenciamento de usuários, autenticação, autorização (roles) e dados de perfil (incluindo verificação de idade).
+3. **Movie Service** - 🟢 **Em Desenvolvimento**
+   *  **Responsabilidade:** Gerenciamento de catálogos de filmes (metadados, faixa etária, etc.).
    *  **Tecnologias planejadas:** Java, Spring Boot, Spring Security, Spring Data JPA, Spring Kafka (Produtor).
 
-4. **Movie Service** - 🚧 A desenvolver
-   *  **Responsabilidade:** Gerenciamento de catálogos de filmes (metadados, faixa etária, etc.).
+4. **User Service** - 🚧 A desenvolver
+   *  **Responsabilidade:** Gerenciamento de usuários, autenticação, autorização (roles) e dados de perfil (incluindo verificação de idade).
    *  **Tecnologias planejadas:** Java, Spring Boot, Spring Security, Spring Data JPA, Spring Kafka (Produtor).
 
 5. **Scheduling Service** - 🚧 A desenvolver
