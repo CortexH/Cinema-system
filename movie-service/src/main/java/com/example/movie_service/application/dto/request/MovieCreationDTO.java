@@ -6,9 +6,9 @@ public record MovieCreationDTO(
         String duration,
         String valid_until,
 
-        String timesPerDay,
+        int timesPerDay,
 
-        String[] exclusive_times
+        OptionalSessionDTO[] optional_sessions
 
 ) {
 }

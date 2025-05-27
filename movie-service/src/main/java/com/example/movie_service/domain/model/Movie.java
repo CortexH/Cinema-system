@@ -19,5 +19,12 @@ public class Movie {
     private Integer timesPerDay;
 
 
-
+    public Movie(UUID id, String name, LocalTime duration, Boolean valid, LocalDateTime validTime, Integer timesPerDay) {
+        this.id = id;
+        this.name = name;
+        this.duration = duration;
+        this.valid = valid;
+        this.validTime = validTime;
+        this.timesPerDay = timesPerDay;
+    }
 }
