@@ -36,7 +36,7 @@ Atualmente, o sistema é composto pelos seguintes microsserviços:
    *  **Responsabilidade:** Gerenciamento de usuários, autenticação, autorização (roles) e dados de perfil (incluindo verificação de idade).
    *  **Tecnologias planejadas:** Java, Spring Boot, Spring Security, Spring Data JPA, Spring Kafka (Produtor).
 
-5. **Scheduling Service** - 🚧 A desenvolver
+5. **Scheduling Service** - 🟢 **Em Desenvolvimento**
    *  **Responsabilidade:** Agendamento de sessões/exibições (conectando filme + sala + sessão + horário + preço).
    *  **Tecnologias planejadas:** Java, Spring Boot, Spring Data JPA, Spring Kafka (Produtor/Consumidor).
 
