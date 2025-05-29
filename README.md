@@ -20,15 +20,15 @@ O foco principal é o aprendizado e a aplicação de conceitos como:
 
 Atualmente, o sistema é composto pelos seguintes microsserviços:
 
-1. **Room Service** - 🌟 **Protótipo Funcional**
+1. **Room Service** - 🌟 **Protótipo Funcional** - Inserido na branch *main*
    *  **Responsabilidade:** Gerenciar a disponibilidade de assentos para sessões de filmes agendadas. Mantém o estado de cada assento (Disponível, assegurado e comprado) para uma sessão específica.
    *  **Tecnologias:** Java, Spring Boot, Spring Data JPA (com H2 por enquanto), Spring Kafka (Produtor/Consumidor).
 
-2. **Ticket Service** - 🌟 **Protótipo Funcional**
+2. **Ticket Service** - 🌟 **Protótipo Funcional** - Inserido na branch *main*
    *  **Responsabilidade:** Orquestrar o processo de compra de ingressos, gerenciar ciclo de vida dos tickets e a validação para entrada.
    *  **Tecnologias:** Java, Spring Boot, Spring Data JPA (com H2 por enquanto), Spring Kafka (Produtor/Consumidor), Chamadas API REST para outros serviços.
 
-3. **Movie Service** - 🟢 **Em Desenvolvimento**
+3. **Movie Service** - 🟢 **Em Desenvolvimento** - Inserido na branch *feature/movie-service*
    *  **Responsabilidade:** Gerenciamento de catálogos de filmes (metadados, faixa etária, etc.).
    *  **Tecnologias planejadas:** Java, Spring Boot, Spring Security, Spring Data JPA, Spring Kafka (Produtor).
 
@@ -36,7 +36,7 @@ Atualmente, o sistema é composto pelos seguintes microsserviços:
    *  **Responsabilidade:** Gerenciamento de usuários, autenticação, autorização (roles) e dados de perfil (incluindo verificação de idade).
    *  **Tecnologias planejadas:** Java, Spring Boot, Spring Security, Spring Data JPA, Spring Kafka (Produtor).
 
-5. **Scheduling Service** - 🟢 **Em Desenvolvimento**
+5. **Scheduling Service** - 🟢 **Em Desenvolvimento** - Inserido na branch *feature/scheduling-service*
    *  **Responsabilidade:** Agendamento de sessões/exibições (conectando filme + sala + sessão + horário + preço).
    *  **Tecnologias planejadas:** Java, Spring Boot, Spring Data JPA, Spring Kafka (Produtor/Consumidor).
 
