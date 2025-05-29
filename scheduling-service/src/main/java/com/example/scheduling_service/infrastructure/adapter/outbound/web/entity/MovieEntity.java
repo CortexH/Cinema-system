@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.UUID;
 
 @Getter
@@ -18,7 +18,7 @@ public class MovieEntity {
     private UUID movieID;
     private String movieName;
 
-    private LocalTime duration;
+    private Duration duration;
     private LocalDateTime validUntil;
     private Integer timesPerDay;
 
