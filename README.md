@@ -11,7 +11,7 @@ O foco principal é o aprendizado e a aplicação de conceitos como:
 - Domain-Driven Design (DDD)
 - Arquitetura Hexagonal (Ports and Adapters)
 - Princípios SOLID e DRY
-- Comunicação Assíncrona com Apacha Kafka
+- Comunicação Assíncrona com Apache Kafka
 - Spring Boot e Ecossistema Spring
 - Testes (Por enquanto de integração, posteriormente unitários)
 - Dockerização e Orquestração com Docker Compose (A ser implementado)
