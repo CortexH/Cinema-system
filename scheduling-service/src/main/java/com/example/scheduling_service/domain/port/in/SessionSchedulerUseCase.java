@@ -1,10 +1,7 @@
 package com.example.scheduling_service.domain.port.in;
 
-import com.example.scheduling_service.domain.valueObject.SessionQueueIdVO;
-
-import java.util.List;
-
-public interface SchedulingUseCase {
+// essa classe interage apenas com o scheduler, não com as sessões em si!
+public interface SessionSchedulerUseCase {
 
     /// Adiciona novas sessões conforme a quantidade de dias e as informações
     /// dos filmes, como a data para finalização, quantidades, limite de exibição, etc.
@@ -17,9 +14,5 @@ public interface SchedulingUseCase {
     /// funções, etc. No geral, apaga ou atualiza sessões conforme o tempo na vida real.
     void runScheduledCheckout();
 
-    /// Se `replace` for `false`, deixará uma lacuna onde era para ter a sessão
-    /// removida. Se for `true`, as sessões posteriores preencherão o espaço em branco.
-    /// No geral, a função serve para remover uma sessão específica das sessões.
-    void removeAndReplaceScheduledSession(Boolean replace, List<SessionQueueIdVO> sessionId);
 
 }

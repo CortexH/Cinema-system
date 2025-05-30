@@ -1,16 +1,13 @@
 package com.example.scheduling_service.application.service;
 
-import com.example.scheduling_service.domain.port.in.SchedulingUseCase;
-import com.example.scheduling_service.domain.valueObject.SessionQueueIdVO;
+import com.example.scheduling_service.domain.port.in.SessionSchedulerUseCase;
+import org.springframework.stereotype.Component;
 
-import java.util.List;
-
-public class ScheduleService implements SchedulingUseCase {
+@Component
+public class ScheduleService implements SessionSchedulerUseCase {
 
     @Override
     public void scheduleNextSessions(Integer days) {
-
-
 
     }
 
@@ -21,11 +18,6 @@ public class ScheduleService implements SchedulingUseCase {
 
     @Override
     public void runScheduledCheckout() {
-
-    }
-
-    @Override
-    public void removeAndReplaceScheduledSession(Boolean replace, List<SessionQueueIdVO> sessionId) {
 
     }
 }

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "session_queue")
-public class SessionQueueEntity {
+public class SessionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

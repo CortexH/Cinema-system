@@ -49,8 +49,8 @@ public class Movie {
             throw new MovieException("O filme será exibido após a validade");
         }
 
-        if((this.duration.toSeconds() *
-                (timesPerDay + setupTime.toSeconds() + finishTime.toSeconds())
+        if((this.duration.toSeconds() +
+                (setupTime.toSeconds() + finishTime.toSeconds()) * timesPerDay
                 ) > openTime.toSeconds()){
 
             throw new MovieException("O filme será exibido durante mais tempo que o cinema estará aberto.");
