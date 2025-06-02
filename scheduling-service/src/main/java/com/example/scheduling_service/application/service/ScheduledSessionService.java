@@ -19,16 +19,21 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
 
     @Override
     public void removeAndReplaceScheduledSession(Boolean replace, List<SessionIdVO> sessionId) {
-
+        sessionRepositoryPort.removeScheduledSession(replace, sessionId);
     }
 
     @Override
     public List<Session> findAllSessions(Integer limitDay) {
-        return List.of();
+        return sessionRepositoryPort.findAllSessions(limitDay);
     }
 
     @Override
     public Optional<Session> insertNewSession(Session session) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Session> removeSession(SessionIdVO sessionIdVO) {
         return Optional.empty();
     }
 
