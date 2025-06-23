@@ -1,0 +1,33 @@
+{
+  "type": "record",
+  "name" : "SchedulerEvent",
+  "namespace": "br.com.cinemaSYS.events.scheduler",
+  "doc": "Evento disparado quando alguma ação com o scheduler acontece. (sessão fechada, aberta, etc)",
+  "fields": [
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "sessions",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "sessionDTO",
+          "fields": [
+            {"name": "sessionId", "type": {"type": "string", "logicalType": "UUID"}},
+            {"name": "movieId", "type": {"type": "string", "logicalType": "UUID"}},
+            {"name": "roomId", "type": {"type": "string", "logicalType": "UUID"}},
+            {"name": "sessionBeginTime", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+            {"name": "sessionEndTime", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+            {"name": "movieDuration", "type": "long"}
+          ]
+        }
+      }
+    }
+  ]
+}

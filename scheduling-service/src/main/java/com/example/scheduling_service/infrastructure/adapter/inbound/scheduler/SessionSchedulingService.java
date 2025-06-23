@@ -16,8 +16,12 @@ public class SessionSchedulingService {
 
     @Scheduled(cron = "0 */5 * * * *")
     public void run(){
-        log.info("TESTE");
         sessionSchedulerUseCase.runScheduledCheckout();
+    }
+
+    @Scheduled(cron = "0 0 12 * * *")
+    public void runDailyMovieSchedule(){
+        sessionSchedulerUseCase.scheduleNextSessions(1);
     }
 
 }

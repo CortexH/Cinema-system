@@ -27,14 +27,16 @@ public class ScheduledSessionController {
 
     @PostMapping
     public ResponseEntity<?> insertNewSession(
-            @PathParam("replace-previous") Boolean replace
-            //@RequestBody Void body
+            @RequestBody Void body
     ){
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeSession(@PathParam("replace") Boolean replace, @PathVariable("id") String id){
+    public ResponseEntity<Void> removeSession(
+            @PathParam("replace") Boolean replace,
+            @PathVariable("id") String id)
+    {
         sessionUseCase.removeAndReplaceScheduledSession(replace, List.of(SessionIdVO.from(id)));
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }

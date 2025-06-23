@@ -4,6 +4,7 @@ public enum SessionScheduleState {
 
     SCHEDULED,
     NOW_WORKING,
-    FINISHED
+    FINISHED,
+    SETUP_IN_PROGRESS
 
 }
