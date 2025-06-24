@@ -33,9 +33,7 @@ public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
 
     @Override
     public void publishRoomCreated(RoomCreatedEventDTO event) {
-
         try{
-
             RoomEvent avroEvent = RoomEvent.newBuilder()
                     .setRoomId(event.roomId())
                     .setRoomName(event.roomName())
@@ -51,7 +49,6 @@ public class KafkaRoomEventPublisherAdapter implements RoomEventPublisherPort {
             log.info("Falha ao criar sala :: {}", e.getMessage());
             throw e;
         }
-
     }
 
     @Override

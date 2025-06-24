@@ -17,7 +17,7 @@
         "type": "array",
         "items": {
           "type": "record",
-          "name": "sessionDTO",
+          "name": "SessionDTO",
           "fields": [
             {"name": "sessionId", "type": {"type": "string", "logicalType": "UUID"}},
             {"name": "movieId", "type": {"type": "string", "logicalType": "UUID"}},
