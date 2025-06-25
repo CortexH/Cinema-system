@@ -12,21 +12,37 @@
       }
     },
     {
-      "name": "sessions",
+      "name": "session",
       "type": {
-        "type": "array",
-        "items": {
-          "type": "record",
-          "name": "SessionDTO",
-          "fields": [
-            {"name": "sessionId", "type": {"type": "string", "logicalType": "UUID"}},
-            {"name": "movieId", "type": {"type": "string", "logicalType": "UUID"}},
-            {"name": "roomId", "type": {"type": "string", "logicalType": "UUID"}},
-            {"name": "sessionBeginTime", "type": {"type": "long", "logicalType": "timestamp-millis"}},
-            {"name": "sessionEndTime", "type": {"type": "long", "logicalType": "timestamp-millis"}},
-            {"name": "movieDuration", "type": "long"}
-          ]
-        }
+        "type": "record",
+        "name": "SessionDTO",
+        "fields": [
+          {"name": "sessionId", "type": {"type": "string", "logicalType": "UUID"}},
+          {"name": "movieId", "type": {"type": "string", "logicalType": "UUID"}},
+          {"name": "roomId", "type": {"type": "string", "logicalType": "UUID"}},
+          {"name": "sessionBeginTime", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+          {"name": "sessionEndTime", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+          {"name": "movieDuration", "type": "long"}
+        ]
+      }
+    },
+    {
+      "name": "eventType",
+      "type": {
+        "type": "enum",
+        "name": "SchedulerEventType",
+        "symbols": [
+          "SESSION_ENDED", "SESSION_BEGIN",
+          "SESSION_REMOVED", "SESSION_ADDED",
+          "SESSION_EDITED", "SESSION_NEAR_TO_BEGIN"
+        ]
+      }
+    },
+    {
+      "name": "eventId",
+      "type": {
+        "type": "string",
+        "logicalType": "UUID"
       }
     }
   ]

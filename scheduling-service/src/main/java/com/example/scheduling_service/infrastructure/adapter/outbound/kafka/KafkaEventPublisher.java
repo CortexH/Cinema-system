@@ -1,6 +1,7 @@
 package com.example.scheduling_service.infrastructure.adapter.outbound.kafka;
 
 import br.com.cinemaSYS.events.scheduler.SchedulerEvent;
+import br.com.cinemaSYS.events.scheduler.SchedulerEventType;
 import com.example.scheduling_service.application.dto.event.SessionBeginEventDTO;
 import com.example.scheduling_service.application.dto.event.SessionEndedEventDTO;
 import com.example.scheduling_service.domain.port.out.SessionEventPublisherPort;
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -21,18 +22,21 @@ public class KafkaEventPublisher implements SessionEventPublisherPort {
 
     private final KafkaTemplate<String, SchedulerEvent> kafkaTemplate;
 
-    @Value("kafka.topic.session.ended")
+    @Value("kafka.topic.session-event")
     private String sessionEndedTopic;
 
     @Override
-    public void publishSessionsEnded(SessionEndedEventDTO dto) {
+    public void publishSessionsEnded(SessionEndedEventDTO dto) { // aqui, eu teria apenas um "trabalhador"?
         try{
 
             SchedulerEvent event = SchedulerEvent.newBuilder()
-                    .setSessions(new ArrayList<>(dto.sessions().stream().map(SessionEventDTOMapper::toDTO).toList()))
+                    .setSession(SessionEventDTOMapper.toDTO(dto.session()))
+                    .setTimestamp(dto.timestamp())
+                    .setEventType(SchedulerEventType.SESSION_ENDED)
+                    .setEventId(UUID.randomUUID().toString())
                     .build();
 
-            String key = event.getTimestamp().toString();
+            String key = dto.session().sessionId().toString();
             kafkaTemplate.send(sessionEndedTopic, key, event);
 
         } catch (Exception e) {

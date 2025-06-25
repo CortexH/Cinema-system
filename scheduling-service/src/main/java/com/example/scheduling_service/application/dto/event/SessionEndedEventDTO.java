@@ -8,6 +8,6 @@ import java.util.List;
 
 public record SessionEndedEventDTO(
         Instant timestamp,
-        List<SessionDTO> sessions
+        SessionDTO session
 ) {
 }
