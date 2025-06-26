@@ -52,7 +52,7 @@ Atualmente, o sistema é composto pelos seguintes microsserviços:
    *  **Responsabilidade:** Coletar dados de eventos para gerar relatórios e estatísticas.
    *  **Tecnologias planejadas:** java, Spring Boot, Spring Kafka (Consumidor), um banco de dados analítico.
 
-9. **(Opcional) API Gateway** - 🔮 Futuro
+9. **(A pensar) API Gateway** - 🔮 Futuro
    *  **Responsabilidade:** Ponto único de entrada para as requisições externas, lidando com roteamento, autenticação rate limiting, etc.
 
 ## 🏗️ Arquitetura e Design
