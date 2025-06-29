@@ -1,26 +1,31 @@
 package com.example.scheduling_service.domain.model;
 
+import com.example.scheduling_service.domain.domainEvents.*;
+import com.example.scheduling_service.domain.enums.SessionEventType;
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.exception.SessionException;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class Session {
 
-    private SessionIdVO id;
+    private List<SessionEvent> events = new ArrayList<>();
 
-    private UUID movieId;
+    private final SessionIdVO id;
+    private final UUID movieId;
+    private final UUID roomId;
 
-    private UUID roomId;
-
-    private LocalDateTime sessionBeginTime;
+    private LocalDateTime sessionBeginTime; // data e hora que a sessão inicia (setupBefore incluso)
     private LocalDateTime sessionEndTime;
 
-    private Duration setupBefore;
-    private Duration setupAfter;
+    private Duration setupTime; // tempo inicial antes do filme começar (limpeza ou coisa parecida)
     private Duration movieDuration;
 
     private SessionScheduleState sessionScheduleState;
@@ -30,9 +35,7 @@ public class Session {
             UUID roomId, LocalDateTime sessionBeginTime,
             LocalDateTime sessionEndTime,
             SessionScheduleState sessionScheduleState,
-            Duration setupBefore, Duration setupAfter,
-            Duration movieDuration
-
+            Duration setupTime, Duration movieDuration
     ) {
         this.id = id;
         this.movieId = movieId;
@@ -40,54 +43,118 @@ public class Session {
         this.sessionBeginTime = sessionBeginTime;
         this.sessionEndTime = sessionEndTime;
         this.sessionScheduleState = sessionScheduleState;
-        this.setupBefore = setupBefore;
-        this.setupAfter = setupAfter;
+        this.setupTime = setupTime;
         this.movieDuration = movieDuration;
-    }
-
-    public boolean validateSessionEnded(){
-        LocalDateTime now = LocalDateTime.now();
-        return this.sessionEndTime.isBefore(now);
-    }
-
-    public boolean validateSessionBegin(){
-        LocalDateTime now = LocalDateTime.now();
-        return this.sessionBeginTime.isBefore(now) && this.sessionEndTime.isAfter(now);
-    }
-
-    // retorna TRUE se estiver no setup time, retorna FALSE se não estiver
-    public boolean validateSetupTime(){
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime time = this.sessionBeginTime.plusNanos(this.setupBefore.toNanos());
-
-        return time.isBefore(now);
+        this.events.add(createSessionScheduledEvent());
     }
 
 
-    // retorna true se houve alguma mudança, retorna false se não houve.
-    public boolean changeSessionState(){
-        if(validateSessionEnded()){
-            if(this.sessionScheduleState == SessionScheduleState.FINISHED) return false;
-            this.sessionScheduleState = SessionScheduleState.FINISHED;
-            return true;
+    public boolean syncStateWithLocalTime(){
+        boolean validated = false;
+        while (validateSession()) {
+            validated = true;
+        }
+        return validated;
+    }
+
+    private boolean validateSession(){
+        SessionScheduleState state = this.sessionScheduleState;
+
+        switch (state){
+            case SCHEDULED -> {
+                if(hasSessionPeriodBegun()){
+                    this.sessionScheduleState = SessionScheduleState.SETUP_IN_PROGRESS;
+                    this.events.add(createSessionSetupBeginEvent());
+                    return true;
+                }
+                return false;
+            }
+            case SETUP_IN_PROGRESS -> {
+                if(hasSetupPeriodFinished()){
+                    this.sessionScheduleState = SessionScheduleState.NOW_WORKING;
+                    this.events.add(createSessionBeginEvent());
+                    return true;
+                }
+                return false;
+            }
+
+            case NOW_WORKING -> {
+                if(hasSessionPeriodFinished()){
+                    this.sessionScheduleState = SessionScheduleState.FINISHED;
+                    this.events.add(createSessionEndEvent());
+                    return true;
+                }
+                return false;
+            }
+            case FINISHED -> {
+                return false;
+            }
+            case null -> throw new SessionException("'sessionScheduledState' está como 'nulo'");
+        }
+    }
+
+    private SessionSetupBeginEvent createSessionSetupBeginEvent(){
+        return new SessionSetupBeginEvent(
+                SessionEventType.SESSION_SETUP, Instant.now(),
+                id.value(), movieId, roomId, sessionBeginTime,
+                sessionEndTime, movieDuration
+
+        );
+    }
+
+    private SessionScheduledEvent createSessionScheduledEvent(){
+        return new SessionScheduledEvent(
+                SessionEventType.SESSION_ADDED, Instant.now(),
+                id.value(), movieId, roomId, sessionBeginTime,
+                sessionEndTime, movieDuration
+        );
+    }
+
+    private SessionBeginEvent createSessionBeginEvent(){
+        return new SessionBeginEvent(
+                SessionEventType.SESSION_BEGIN, Instant.now(),
+                this.id.value(), movieId, roomId,
+                sessionBeginTime, sessionEndTime,
+                movieDuration
+        );
+    }
+
+    private SessionEndEvent createSessionEndEvent(){
+        return new SessionEndEvent(
+                SessionEventType.SESSION_ENDED, Instant.now(),
+                id.value(), movieId, roomId, sessionBeginTime,
+                sessionEndTime, movieDuration
+        );
+    }
+
+    // VALIDATIONS
+
+    private LocalDateTime getSetupBeginTime() {
+        return this.sessionBeginTime.minus(this.setupTime);
+    }
+
+    private boolean hasSessionPeriodBegun() {
+        return LocalDateTime.now().isAfter(this.sessionBeginTime);
+    }
+
+    private boolean hasSetupPeriodFinished() {
+        return LocalDateTime.now().isAfter(this.sessionBeginTime.plusNanos(this.setupTime.toNanos()));
+    }
+
+    private boolean hasSessionPeriodFinished() {
+        return LocalDateTime.now().isAfter(this.sessionEndTime);
+    }
+
+    // get / set
+    public List<SessionEvent> pullDomainEvents(){
+        if(this.events.isEmpty()){
+            return Collections.emptyList();
         }
 
-        if(validateSessionBegin()){
-            if(this.sessionScheduleState == SessionScheduleState.NOW_WORKING) return false;
-            this.sessionScheduleState = SessionScheduleState.NOW_WORKING;
-        }
-
-        if(validateSetupTime()){
-            if(this.sessionScheduleState == SessionScheduleState.SETUP_IN_PROGRESS) return false;
-            this.sessionScheduleState = SessionScheduleState.SETUP_IN_PROGRESS;
-            return true;
-        }
-
-        if(this.sessionScheduleState == SessionScheduleState.SCHEDULED) return false;
-        this.sessionScheduleState = SessionScheduleState.SCHEDULED;
-        return true;
+        List<SessionEvent> pulledEvents = new ArrayList<>(this.events);
+        this.events.clear();
+        return pulledEvents;
     }
-
 
     public SessionIdVO getId() {
         return id;
@@ -117,20 +184,12 @@ public class Session {
         this.sessionEndTime = sessionEndTime;
     }
 
-    public Duration getSetupBefore() {
-        return setupBefore;
+    public Duration getSetupTime() {
+        return setupTime;
     }
 
-    public void setSetupBefore(Duration setupBefore) {
-        this.setupBefore = setupBefore;
-    }
-
-    public Duration getSetupAfter() {
-        return setupAfter;
-    }
-
-    public void setSetupAfter(Duration setupAfter) {
-        this.setupAfter = setupAfter;
+    public void setSetupTime(Duration setupTime) {
+        this.setupTime = setupTime;
     }
 
     public SessionScheduleState getSessionScheduleState() {

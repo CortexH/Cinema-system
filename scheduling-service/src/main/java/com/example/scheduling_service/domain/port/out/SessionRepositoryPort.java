@@ -11,7 +11,7 @@ public interface SessionRepositoryPort {
 
     void removeScheduledSession(Boolean autoFillBlank, List<SessionIdVO> ids);
     Session insertNewSession(Session session);
-
+    List<Session> saveInBatch(List<Session> sessions);
 
     List<Session> findByState(SessionScheduleState state);
     List<Session> findAllSessions(Integer limit);

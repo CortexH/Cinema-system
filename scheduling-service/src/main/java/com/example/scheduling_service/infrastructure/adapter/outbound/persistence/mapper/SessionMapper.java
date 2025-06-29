@@ -15,7 +15,6 @@ public class SessionMapper {
                 entity.getSessionEndTime(),
                 entity.getSessionScheduleState(),
                 entity.getSetupBeginTime(),
-                entity.getSetupEndTime(),
                 entity.getMovieDuration()
 
         );
@@ -29,8 +28,7 @@ public class SessionMapper {
                 session.getSessionEndTime(),
                 session.getSessionScheduleState(),
                 session.getRoomId(),
-                session.getSetupBefore(),
-                session.getSetupAfter(),
+                session.getSetupTime(),
                 session.getMovieDuration()
         );
     }

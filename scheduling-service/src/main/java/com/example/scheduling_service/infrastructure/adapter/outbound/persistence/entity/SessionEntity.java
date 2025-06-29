@@ -42,9 +42,6 @@ public class SessionEntity {
     @Convert(converter = DurationConverter.class)
     private Duration setupBeginTime;
 
-    @Convert(converter = DurationConverter.class)
-    private Duration setupEndTime;
-
     private Duration movieDuration;
 
 }

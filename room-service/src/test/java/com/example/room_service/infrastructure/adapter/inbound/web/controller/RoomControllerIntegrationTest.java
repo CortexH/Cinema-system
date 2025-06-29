@@ -5,6 +5,7 @@ import com.example.room_service.application.dto.request.CreateRoomRequestDTO;
 import com.example.room_service.domain.enums.SeatState;
 import com.example.room_service.domain.port.out.RoomEventPublisherPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -31,6 +31,14 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
+    public List<Session> saveInBatch(List<Session> sessions) {
+        return new ArrayList<>(repository.saveAll(
+                sessions.stream().map(SessionMapper::toOutbound)
+                        .toList()
+        ).stream().map(SessionMapper::toInbound).toList());
+    }
+
+    @Override
     public List<Session> findByState(SessionScheduleState state) {
         return repository.findBySessionScheduleState(state).stream().map(SessionMapper::toInbound).toList();
     }

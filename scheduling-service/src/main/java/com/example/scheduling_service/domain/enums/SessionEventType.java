@@ -6,6 +6,8 @@ public enum SessionEventType {
     SESSION_BEGIN,
     SESSION_REMOVED,
     SESSION_ADDED,
-    SESSION_EDITED
+    SESSION_EDITED,
+    SESSION_SETUP,
+    SESSION_NEAR_TO_BEGIN
 
 }

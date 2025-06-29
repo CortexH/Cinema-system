@@ -2,17 +2,14 @@ package com.example.scheduling_service.domain.port.out;
 
 import com.example.scheduling_service.application.dto.event.SessionBeginEventDTO;
 import com.example.scheduling_service.application.dto.event.SessionEndedEventDTO;
+import com.example.scheduling_service.application.dto.event.SessionEventAbstract;
+import com.example.scheduling_service.domain.domainEvents.SessionEvent;
+
+import java.util.List;
 
 public interface SessionEventPublisherPort {
 
-    void publishSessionsEnded(SessionEndedEventDTO event);
-    void publishSessionsStarted(SessionBeginEventDTO eventDTO);
-
-    void publishSessionsRemoved();
-    void publishSessionsAdded();
-
-    void publishSessionsEdited();
-
-    void publishSessionNearToBegin();
+    void publishSessionEvent(SessionEvent event);
+    void publishAll(List<SessionEvent> events);
 
 }

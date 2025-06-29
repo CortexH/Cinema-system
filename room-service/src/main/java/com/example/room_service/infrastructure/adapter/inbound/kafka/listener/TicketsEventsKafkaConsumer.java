@@ -35,7 +35,6 @@ public class TicketsEventsKafkaConsumer {
             case TICKET_CREATED -> handleTicketCreated(EventsDTOMapper.toTicketCreatedEvent(event));
             case TICKET_REQUESTED -> handleTicketRequested(EventsDTOMapper.toTicketRequestedEvent(event));
             case TICKET_CREATION_FAILED -> handleTicketCreationFailed(EventsDTOMapper.toTicketCreationFailedEvent(event));
-
         }
 
     }
