@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -21,4 +22,6 @@ public class MovieEntity {
     private Duration duration;
     private LocalDateTime validUntil;
     private Integer timesPerDay;
+    private List<SpecificSchedule> schedules;
+
 }
