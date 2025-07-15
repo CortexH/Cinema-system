@@ -21,5 +21,4 @@ public class MovieEntity {
     private Duration duration;
     private LocalDateTime validUntil;
     private Integer timesPerDay;
-
 }
