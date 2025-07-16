@@ -1,4 +1,4 @@
-package com.example.scheduling_service.domain.port.in;
+package com.example.scheduling_service.application.port.in;
 
 import com.example.scheduling_service.domain.model.Session;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;

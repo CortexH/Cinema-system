@@ -1,4 +1,4 @@
-package com.example.scheduling_service.domain.port.out;
+package com.example.scheduling_service.application.port.out;
 
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
