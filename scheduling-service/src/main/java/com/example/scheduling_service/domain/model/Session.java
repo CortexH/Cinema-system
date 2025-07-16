@@ -9,7 +9,6 @@ import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +61,7 @@ public class Session {
         this.sessionEndTime = sessionEndTime;
         this.setupTime = setupTime;
         this.movieDuration = movieDuration;
+        this.sessionScheduleState = SessionScheduleState.SCHEDULED;
     }
 
     public boolean syncStateWithLocalTime(){
