@@ -29,7 +29,7 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
 
     @Override
     public Optional<Session> insertNewSession(Session session) {
-        return Optional.empty();
+        return sessionRepositoryPort.insertNewSession(session);
     }
 
     @Override

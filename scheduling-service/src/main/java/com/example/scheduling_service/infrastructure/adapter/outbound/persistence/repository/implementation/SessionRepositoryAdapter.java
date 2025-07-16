@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,8 +27,9 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
-    public Session insertNewSession(Session session) {
-        return null;
+    public Optional<Session> insertNewSession(Session session) {
+        return Optional.of(
+                SessionMapper.toInbound(repository.save(SessionMapper.toOutbound(session))));
     }
 
     @Override
