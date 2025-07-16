@@ -9,6 +9,7 @@ import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,14 +47,13 @@ public class Session {
         this.setupTime = setupTime;
         this.movieDuration = movieDuration;
         this.events.add(createSessionScheduledEvent());
-        generateMovieDurationIfNull();
     }
 
     public Session(
             SessionIdVO id, UUID movieId,
             UUID roomId, LocalDateTime sessionBeginTime,
             LocalDateTime sessionEndTime,
-            Duration setupTime
+            Duration setupTime, Duration movieDuration
     ){
         this.id = id;
         this.movieId = movieId;
@@ -61,7 +61,7 @@ public class Session {
         this.sessionBeginTime = sessionBeginTime;
         this.sessionEndTime = sessionEndTime;
         this.setupTime = setupTime;
-        generateMovieDurationIfNull();
+        this.movieDuration = movieDuration;
     }
 
     public boolean syncStateWithLocalTime(){
@@ -106,12 +106,6 @@ public class Session {
             }
             case null -> throw new SessionException("'sessionScheduledState' está como 'nulo'");
         }
-    }
-
-    private void generateMovieDurationIfNull(){
-        if(setupTime == null) this.setupTime = Duration.ZERO;
-        if(this.movieDuration != null) return;
-        movieDuration = Duration.ofNanos(sessionEndTime.minusNanos(sessionBeginTime.plus(setupTime).getNano()).getNano());
     }
 
     private SessionSetupBeginEvent createSessionSetupBeginEvent(){

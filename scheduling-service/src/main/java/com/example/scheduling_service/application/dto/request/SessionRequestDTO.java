@@ -8,6 +8,7 @@ public record SessionRequestDTO(
         UUID room_id,
         String session_begin_time,
         String session_end_time,
-        String setup_duration
+        Long setup_duration,
+        Long movie_duration
 ) {
 }
