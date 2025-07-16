@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -66,7 +67,7 @@ public class RoomControllerIntegrationTest {
                 .andExpect(jsonPath("$.seats[0].state").value(SeatState.AVAILABLE.name()))
                 .andExpect(jsonPath("$.seats[5].seat_number").value("B1"));
 
-        verify(roomEventPublisherPort, times(1)).publishRoomCreated(any(RoomCreatedEventDTO.class));
+        Mockito.verify(roomEventPublisherPort, times(1)).publishRoomCreated(any(RoomCreatedEventDTO.class));
 
     }
 

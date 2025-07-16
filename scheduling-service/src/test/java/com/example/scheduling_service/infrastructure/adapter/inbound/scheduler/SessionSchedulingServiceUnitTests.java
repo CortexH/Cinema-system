@@ -5,8 +5,8 @@ import com.example.scheduling_service.domain.domainEvents.SessionEvent;
 import com.example.scheduling_service.domain.enums.SessionEventType;
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.domain.port.out.SessionEventPublisherPort;
-import com.example.scheduling_service.domain.port.out.SessionRepositoryPort;
+import com.example.scheduling_service.application.port.out.SessionEventPublisherPort;
+import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
