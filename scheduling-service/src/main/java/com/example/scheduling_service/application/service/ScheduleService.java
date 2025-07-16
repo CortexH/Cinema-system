@@ -2,9 +2,9 @@ package com.example.scheduling_service.application.service;
 
 import com.example.scheduling_service.domain.domainEvents.SessionEvent;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.domain.port.in.SessionSchedulerUseCase;
-import com.example.scheduling_service.domain.port.out.SessionEventPublisherPort;
-import com.example.scheduling_service.domain.port.out.SessionRepositoryPort;
+import com.example.scheduling_service.application.port.in.SessionSchedulerUseCase;
+import com.example.scheduling_service.application.port.out.SessionEventPublisherPort;
+import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

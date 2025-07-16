@@ -1,6 +1,6 @@
 package com.example.scheduling_service.infrastructure.adapter.inbound.scheduler;
 
-import com.example.scheduling_service.domain.port.in.SessionSchedulerUseCase;
+import com.example.scheduling_service.application.port.in.SessionSchedulerUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

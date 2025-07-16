@@ -1,8 +1,9 @@
 package com.example.scheduling_service.infrastructure.adapter.inbound.web.controller;
 
 import com.example.scheduling_service.application.dto.request.SessionRequestDTO;
-import com.example.scheduling_service.domain.port.in.ScheduledSessionUseCase;
+import com.example.scheduling_service.application.port.in.ScheduledSessionUseCase;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
+import com.example.scheduling_service.infrastructure.adapter.inbound.web.mapper.SessionRequestDTOMapper;
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,12 @@ public class ScheduledSessionController {
     }
 
     @PostMapping
-    public ResponseEntity<?> insertNewSession(
-            @RequestBody Void body
+    public ResponseEntity<Void> insertNewSession(
+            @RequestBody SessionRequestDTO body
     ){
-        return ResponseEntity.noContent().build();
+        sessionUseCase.insertNewSession(SessionRequestDTOMapper.toInbound(body));
+        return ResponseEntity.noContent()
+                .build();
     }
 
     @DeleteMapping("/{id}")

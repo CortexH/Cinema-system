@@ -1,8 +1,8 @@
 package com.example.scheduling_service.application.service;
 
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.domain.port.in.ScheduledSessionUseCase;
-import com.example.scheduling_service.domain.port.out.SessionRepositoryPort;
+import com.example.scheduling_service.application.port.in.ScheduledSessionUseCase;
+import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

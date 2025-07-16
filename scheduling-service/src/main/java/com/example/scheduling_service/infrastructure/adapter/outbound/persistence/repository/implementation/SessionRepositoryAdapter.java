@@ -2,7 +2,7 @@ package com.example.scheduling_service.infrastructure.adapter.outbound.persisten
 
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.domain.port.out.SessionRepositoryPort;
+import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.mapper.SessionMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.repository.repository.SessionRepositoryJPA;
