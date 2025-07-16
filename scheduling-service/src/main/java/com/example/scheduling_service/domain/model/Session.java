@@ -16,13 +16,13 @@ import java.util.UUID;
 
 public class Session {
 
-    private List<SessionEvent> events = new ArrayList<>();
+    private final List<SessionEvent> events = new ArrayList<>();
 
     private final SessionIdVO id;
     private final UUID movieId;
     private final UUID roomId;
 
-    private LocalDateTime sessionBeginTime; // data e hora que a sessão inicia (setupBefore incluso)
+    private LocalDateTime sessionBeginTime; // data e hora que a sessão inicia (contado logo após o início do 'setupTime')
     private LocalDateTime sessionEndTime;
 
     private Duration setupTime; // tempo inicial antes do filme começar (limpeza ou coisa parecida)
@@ -46,8 +46,23 @@ public class Session {
         this.setupTime = setupTime;
         this.movieDuration = movieDuration;
         this.events.add(createSessionScheduledEvent());
+        generateMovieDurationIfNull();
     }
 
+    public Session(
+            SessionIdVO id, UUID movieId,
+            UUID roomId, LocalDateTime sessionBeginTime,
+            LocalDateTime sessionEndTime,
+            Duration setupTime
+    ){
+        this.id = id;
+        this.movieId = movieId;
+        this.roomId = roomId;
+        this.sessionBeginTime = sessionBeginTime;
+        this.sessionEndTime = sessionEndTime;
+        this.setupTime = setupTime;
+        generateMovieDurationIfNull();
+    }
 
     public boolean syncStateWithLocalTime(){
         boolean validated = false;
@@ -93,6 +108,12 @@ public class Session {
         }
     }
 
+    private void generateMovieDurationIfNull(){
+        if(setupTime == null) this.setupTime = Duration.ZERO;
+        if(this.movieDuration != null) return;
+        movieDuration = Duration.ofNanos(sessionEndTime.minusNanos(sessionBeginTime.plus(setupTime).getNano()).getNano());
+    }
+
     private SessionSetupBeginEvent createSessionSetupBeginEvent(){
         return new SessionSetupBeginEvent(
                 SessionEventType.SESSION_SETUP, Instant.now(),
@@ -129,10 +150,6 @@ public class Session {
 
     // VALIDATIONS
 
-    private LocalDateTime getSetupBeginTime() {
-        return this.sessionBeginTime.minus(this.setupTime);
-    }
-
     private boolean hasSessionPeriodBegun() {
         return LocalDateTime.now().isAfter(this.sessionBeginTime);
     }
@@ -146,6 +163,7 @@ public class Session {
     }
 
     // get / set
+
     public List<SessionEvent> pullDomainEvents(){
         if(this.events.isEmpty()){
             return Collections.emptyList();
@@ -206,5 +224,20 @@ public class Session {
 
     public void setMovieDuration(Duration movieDuration) {
         this.movieDuration = movieDuration;
+    }
+
+    @Override
+    public String toString() {
+        return "Session{" +
+                "events=" + events +
+                ", id=" + id +
+                ", movieId=" + movieId +
+                ", roomId=" + roomId +
+                ", sessionBeginTime=" + sessionBeginTime +
+                ", sessionEndTime=" + sessionEndTime +
+                ", setupTime=" + setupTime +
+                ", movieDuration=" + movieDuration +
+                ", sessionScheduleState=" + sessionScheduleState +
+                '}';
     }
 }
