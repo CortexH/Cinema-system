@@ -59,7 +59,7 @@ public class ScheduledSessionsIntegrationTests {
                 .post("/api/v1/scheduler-sessions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(request))
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+                .andExpect(MockMvcResultMatchers.status().isCreated());
 
         Session databaseSession = sessionRepository.findAll()
                 .stream().map(SessionMapper::toInbound).toList().getFirst();
@@ -71,6 +71,25 @@ public class ScheduledSessionsIntegrationTests {
         Assert.isTrue(databaseSession.getSetupTime().equals(requestSession.getSetupTime()), "o campo 'setupTime' de ambas as sessões não condizem");
     }
 
+    @Test
+    @DisplayName("Validar remover sessão já agendada com replace desativado")
+    void testRemoveScheduledSession(){
+        SessionRequestDTO sessionRequestFirst = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                "2025-07-16T14:00:00",
+                "2025-07-16T17:00:00",
+                2700L, 540000L
+        );
 
+        SessionRequestDTO sessionRequestLast = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                "2025-07-16T17:00:00",
+                "2025-07-16T20:00:00",
+                2700L, 540000L
+        );
+
+
+
+    }
 
 }
