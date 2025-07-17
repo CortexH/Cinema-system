@@ -22,14 +22,13 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     private final SessionRepositoryJPA repository;
 
     @Override
-    public void removeScheduledSession(Boolean autoFillBlank, List<SessionIdVO> ids) {
-
+    public void removeScheduledSession(SessionIdVO id) {
+        repository.deleteById(id.value());
     }
 
     @Override
-    public Optional<Session> insertNewSession(Session session) {
-        return Optional.of(
-                SessionMapper.toInbound(repository.save(SessionMapper.toOutbound(session))));
+    public Session insertNewSession(Session session) {
+        return SessionMapper.toInbound(repository.save(SessionMapper.toOutbound(session)));
     }
 
     @Override

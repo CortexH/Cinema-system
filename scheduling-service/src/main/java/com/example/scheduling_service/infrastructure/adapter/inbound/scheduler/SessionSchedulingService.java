@@ -14,7 +14,7 @@ public class SessionSchedulingService {
 
     private final SessionSchedulerUseCase sessionSchedulerUseCase;
 
-    @Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "0 */1 * * * *")
     public void run(){
         sessionSchedulerUseCase.runScheduledCheckout();
     }

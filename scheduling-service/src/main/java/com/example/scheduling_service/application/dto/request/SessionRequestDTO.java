@@ -1,6 +1,5 @@
 package com.example.scheduling_service.application.dto.request;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record SessionRequestDTO(

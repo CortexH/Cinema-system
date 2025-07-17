@@ -10,8 +10,8 @@ import java.util.UUID;
 
 public interface SessionRepositoryPort {
 
-    void removeScheduledSession(Boolean autoFillBlank, List<SessionIdVO> ids);
-    Optional<Session> insertNewSession(Session session);
+    void removeScheduledSession(SessionIdVO id);
+    Session insertNewSession(Session session);
     List<Session> saveInBatch(List<Session> sessions);
 
     List<Session> findByState(SessionScheduleState state);

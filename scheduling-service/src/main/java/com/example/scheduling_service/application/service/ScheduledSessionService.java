@@ -1,5 +1,6 @@
 package com.example.scheduling_service.application.service;
 
+import com.example.scheduling_service.domain.exception.SessionException;
 import com.example.scheduling_service.domain.model.Session;
 import com.example.scheduling_service.application.port.in.ScheduledSessionUseCase;
 import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
@@ -7,6 +8,7 @@ import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +20,8 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
     private final SessionRepositoryPort sessionRepositoryPort;
 
     @Override
-    public void removeAndReplaceScheduledSession(Boolean replace, List<SessionIdVO> sessionId) {
-        sessionRepositoryPort.removeScheduledSession(replace, sessionId);
+    public void removeAndReplaceScheduledSession(Boolean replace, SessionIdVO sessionId) {
+        sessionRepositoryPort.removeScheduledSession(sessionId);
     }
 
     @Override
@@ -28,13 +30,13 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
     }
 
     @Override
-    public Optional<Session> insertNewSession(Session session) {
+    public Session insertNewSession(Session session) {
         return sessionRepositoryPort.insertNewSession(session);
     }
 
     @Override
-    public Optional<Session> removeSession(SessionIdVO sessionIdVO) {
-        return Optional.empty();
+    public Session removeSession(SessionIdVO sessionIdVO) {
+        return null;
     }
 
     @Override
