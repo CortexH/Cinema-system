@@ -6,6 +6,7 @@ import br.com.cinemaSYS.events.scheduler.SessionDTO;
 import com.example.scheduling_service.domain.domainEvents.*;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.UUID;
 
 public class SchedulerEventMapper {
@@ -17,9 +18,10 @@ public class SchedulerEventMapper {
                 .setTimestamp(event.timestamp())
                 .setSession(SessionDTO.newBuilder()
                         .setMovieId(event.movieId().toString())
+                        .setRoomId(event.roomId().toString())
                         .setSessionId(event.sessionId().toString())
-                        .setSessionEndTime(Instant.from(event.sessionEndTime()))
-                        .setSessionBeginTime(Instant.from(event.sessionEndTime()))
+                        .setSessionEndTime(event.sessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
+                        .setSessionBeginTime(event.sessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
                         .setMovieDuration(event.movieDuration().toMillis())
                         .build())
                 .build();
@@ -32,9 +34,10 @@ public class SchedulerEventMapper {
                 .setTimestamp(event.timestamp())
                 .setSession(SessionDTO.newBuilder()
                         .setMovieId(event.movieId().toString())
+                        .setRoomId(event.roomId().toString())
                         .setSessionId(event.sessionId().toString())
-                        .setSessionEndTime(Instant.from(event.sessionEndTime()))
-                        .setSessionBeginTime(Instant.from(event.sessionEndTime()))
+                        .setSessionEndTime(event.sessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
+                        .setSessionBeginTime(event.sessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
                         .setMovieDuration(event.movieDuration().toMillis())
                         .build())
                 .build();
@@ -47,9 +50,10 @@ public class SchedulerEventMapper {
                 .setTimestamp(event.timestamp())
                 .setSession(SessionDTO.newBuilder()
                         .setMovieId(event.movieId().toString())
+                        .setRoomId(event.roomId().toString())
                         .setSessionId(event.sessionId().toString())
-                        .setSessionEndTime(Instant.from(event.sessionEndTime()))
-                        .setSessionBeginTime(Instant.from(event.sessionEndTime()))
+                        .setSessionEndTime(event.sessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
+                        .setSessionBeginTime(event.sessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
                         .setMovieDuration(event.movieDuration().toMillis())
                         .build())
                 .build();
@@ -62,9 +66,10 @@ public class SchedulerEventMapper {
                 .setTimestamp(event.timestamp())
                 .setSession(SessionDTO.newBuilder()
                         .setMovieId(event.movieId().toString())
+                        .setRoomId(event.roomId().toString())
                         .setSessionId(event.sessionId().toString())
-                        .setSessionEndTime(Instant.from(event.sessionEndTime()))
-                        .setSessionBeginTime(Instant.from(event.sessionEndTime()))
+                        .setSessionEndTime(event.sessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
+                        .setSessionBeginTime(event.sessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
                         .setMovieDuration(event.movieDuration().toMillis())
                         .build())
                 .build();
@@ -78,8 +83,8 @@ public class SchedulerEventMapper {
                 .setSession(SessionDTO.newBuilder()
                         .setMovieId(event.movieId().toString())
                         .setSessionId(event.sessionId().toString())
-                        .setSessionEndTime(Instant.from(event.sessionEndTime()))
-                        .setSessionBeginTime(Instant.from(event.sessionEndTime()))
+                        .setSessionEndTime(event.sessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
+                        .setSessionBeginTime(event.sessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
                         .setMovieDuration(event.movieDuration().toMillis())
                         .build())
                 .build();
