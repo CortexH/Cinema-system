@@ -31,7 +31,7 @@ public class ScheduleService implements SessionSchedulerUseCase {
     }
 
     @Override
-    @Transactional
+    @Transactional("transactionManager")
     public void runScheduledCheckout() {
         List<Session> allSessions = sessionPort.findAllSessions();
 

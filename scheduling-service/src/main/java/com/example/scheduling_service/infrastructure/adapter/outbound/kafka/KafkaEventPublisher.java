@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
@@ -42,10 +44,15 @@ public class KafkaEventPublisher implements SessionEventPublisherPort {
 
     @Override
     public void publishAll(List<SessionEvent> sessionEvents){
-        for (SessionEvent contractEvent : sessionEvents){
-            SchedulerEvent event = getEvent(contractEvent);
-            publishSessionEvent(event);
-        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                for (SessionEvent contractEvent : sessionEvents){
+                    SchedulerEvent event = getEvent(contractEvent);
+                    publishSessionEvent(event);
+                }
+            }
+        });
     }
 
     private SchedulerEvent getEvent(SessionEvent model){
