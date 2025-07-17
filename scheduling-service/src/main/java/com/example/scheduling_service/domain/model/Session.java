@@ -45,6 +45,8 @@ public class Session {
         this.sessionScheduleState = sessionScheduleState;
         this.setupTime = setupTime;
         this.movieDuration = movieDuration;
+        calculateMovieDurationIfNull();
+        validateData();
         this.events.add(createSessionScheduledEvent());
     }
 
@@ -62,6 +64,9 @@ public class Session {
         this.setupTime = setupTime;
         this.movieDuration = movieDuration;
         this.sessionScheduleState = SessionScheduleState.SCHEDULED;
+        calculateMovieDurationIfNull();
+        validateData();
+        this.events.add(createSessionScheduledEvent());
     }
 
     public boolean syncStateWithLocalTime(){
@@ -108,6 +113,17 @@ public class Session {
         }
     }
 
+    private void calculateMovieDurationIfNull(){
+        if(this.movieDuration != null && this.movieDuration != Duration.ZERO) return;
+        if(this.setupTime == null) this.setupTime = Duration.ZERO;
+
+        this.movieDuration = Duration.between(
+                sessionBeginTime.plusNanos(setupTime.toNanos()),
+                sessionEndTime
+        );
+
+    }
+
     private SessionSetupBeginEvent createSessionSetupBeginEvent(){
         return new SessionSetupBeginEvent(
                 SessionEventType.SESSION_SETUP, Instant.now(),
@@ -142,7 +158,28 @@ public class Session {
         );
     }
 
+
     // VALIDATIONS
+
+    public void validateIfCompatibleWithPreviousSession(Session previous) {
+        if(previous == null) return;
+
+        if(previous.getSessionBeginTime().isBefore(sessionBeginTime)
+                && previous.getSessionBeginTime().isBefore(sessionEndTime)
+                && previous.getSessionEndTime().isBefore(sessionBeginTime)
+                && previous.getSessionEndTime().isBefore(sessionEndTime))
+            throw new SessionException("A sessão anterior já está agendada nesse horário.");
+    }
+
+    public void validateIfCompatibleWithNextSession(Session next){
+        if(next == null) return;
+
+        if(next.getSessionBeginTime().isAfter(sessionBeginTime)
+                && next.getSessionBeginTime().isAfter(sessionEndTime)
+                && next.getSessionEndTime().isAfter(sessionBeginTime)
+                && next.getSessionEndTime().isAfter(sessionEndTime))
+            throw new SessionException("A sessão posterior já está agendada nesse horário.");
+    }
 
     private boolean hasSessionPeriodBegun() {
         return LocalDateTime.now().isAfter(this.sessionBeginTime);
@@ -154,6 +191,18 @@ public class Session {
 
     private boolean hasSessionPeriodFinished() {
         return LocalDateTime.now().isAfter(this.sessionEndTime);
+    }
+
+    private void validateData(){
+        if(sessionBeginTime == null) throw new SessionException("data de inicio da sessão não pode estar nulo.");
+        if(sessionEndTime == null) throw new SessionException("data de fim da sessão não pode estar nulo.");
+
+        if(this.sessionBeginTime.isAfter(sessionEndTime))
+            throw new SessionException("Data de início não pode estar após data de fim.");
+
+        if(movieId == null) throw new SessionException("Id do filme não pode estar nulo.");
+        if(roomId == null) throw new SessionException("Id da sala não pode estar nulo.");
+        if(sessionScheduleState == null) sessionScheduleState = SessionScheduleState.SCHEDULED;
     }
 
     // get / set
