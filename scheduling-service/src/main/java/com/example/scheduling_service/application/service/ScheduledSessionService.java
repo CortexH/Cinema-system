@@ -6,13 +6,16 @@ import com.example.scheduling_service.application.port.in.ScheduledSessionUseCas
 import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ScheduledSessionService implements ScheduledSessionUseCase {
@@ -20,8 +23,17 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
     private final SessionRepositoryPort sessionRepositoryPort;
 
     @Override
+    @Transactional
     public void removeAndReplaceScheduledSession(Boolean replace, SessionIdVO sessionId) {
+        Session session = sessionRepositoryPort.findById(sessionId)
+                        .orElseThrow(() -> new NoSuchElementException("Sessão com o id especificado não encontrada."));
+
+        session.validateIfAbleToRemove();
+
         sessionRepositoryPort.removeScheduledSession(sessionId);
+
+
+
     }
 
     @Override
@@ -31,6 +43,19 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
 
     @Override
     public Session insertNewSession(Session session) {
+
+        Session previousSession = sessionRepositoryPort.findPreviousSession(session)
+                .orElse(null);
+
+        Session nextSession = sessionRepositoryPort.findNextSession(session)
+                .orElse(null);
+
+        log.info("PREVIOUS :: {}", previousSession);
+        log.info("NEXT :: {}", previousSession);
+
+        session.validateIfCompatibleWithNextSession(nextSession);
+        session.validateIfCompatibleWithPreviousSession(previousSession);
+
         return sessionRepositoryPort.insertNewSession(session);
     }
 

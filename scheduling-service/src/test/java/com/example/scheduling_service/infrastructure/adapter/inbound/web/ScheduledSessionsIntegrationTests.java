@@ -1,20 +1,15 @@
 package com.example.scheduling_service.infrastructure.adapter.inbound.web;
 
 import com.example.scheduling_service.application.dto.request.SessionRequestDTO;
-import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import com.example.scheduling_service.infrastructure.adapter.inbound.web.mapper.SessionRequestDTOMapper;
-import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.entity.SessionEntity;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.mapper.SessionMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.repository.repository.SessionRepositoryJPA;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -85,6 +80,23 @@ public class ScheduledSessionsIntegrationTests {
                 UUID.randomUUID(), UUID.randomUUID(),
                 "2025-07-16T17:00:00",
                 "2025-07-16T20:00:00",
+                2700L, 540000L
+        );
+
+    }
+
+    void testAddConflictedSession(){
+        SessionRequestDTO sessionRequestFirst = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                "2025-07-16T14:00:00",
+                "2025-07-16T17:00:00",
+                2700L, 540000L
+        );
+
+        SessionRequestDTO sessionRequestLast = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                "2025-07-16T15:00:00",
+                "2025-07-16T18:00:00",
                 2700L, 540000L
         );
 

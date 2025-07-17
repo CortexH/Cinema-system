@@ -161,6 +161,11 @@ public class Session {
 
     // VALIDATIONS
 
+    public void validateIfAbleToRemove(){
+        if(this.sessionBeginTime.isBefore(LocalDateTime.now().plusDays(1)))
+            throw new SessionException("não é possível remover sessões com menos de um dia para iniciar");
+    }
+
     public void validateIfCompatibleWithPreviousSession(Session previous) {
         if(previous == null) return;
 

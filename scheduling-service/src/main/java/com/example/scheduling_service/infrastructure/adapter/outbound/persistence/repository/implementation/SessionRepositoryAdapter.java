@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,12 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
+    public Optional<Session> findById(SessionIdVO id) {
+        return repository.findById(id.value())
+                .map(SessionMapper::toInbound);
+    }
+
+    @Override
     public List<Session> findByState(SessionScheduleState state) {
         return repository.findBySessionScheduleState(state).stream().map(SessionMapper::toInbound).toList();
     }
@@ -57,5 +64,27 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     @Override
     public List<Session> findSessionsOfDeterminedMovie(UUID movieId) {
         return List.of();
+    }
+
+    @Override
+    public List<Session> findSessionsByBeginTimeRange(LocalDateTime first, LocalDateTime last) {
+        return new ArrayList<>(repository.findSessionsByBeginDateTimeRange(first, last)
+                .stream().map(SessionMapper::toInbound).toList());
+    }
+
+    @Override
+    public List<Session> findSessionsByEndTimeRange(LocalDateTime first, LocalDateTime last) {
+        return new ArrayList<>(repository.findSessionsByEndDateTimeRange(first, last)
+                .stream().map(SessionMapper::toInbound).toList());
+    }
+
+    @Override
+    public Optional<Session> findNextSession(Session session) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Session> findPreviousSession(Session session) {
+        return Optional.empty();
     }
 }
