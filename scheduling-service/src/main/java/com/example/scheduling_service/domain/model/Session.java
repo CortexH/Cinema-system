@@ -47,6 +47,7 @@ public class Session {
         this.setupTime = setupTime;
         this.movieDuration = movieDuration;
         calculateMovieDurationIfNull();
+        calculateSetupDuration();
         validateData();
         this.events.add(createSessionScheduledEvent());
     }
@@ -66,6 +67,7 @@ public class Session {
         this.movieDuration = movieDuration;
         this.sessionScheduleState = SessionScheduleState.SCHEDULED;
         calculateMovieDurationIfNull();
+        calculateSetupDuration();
         validateData();
         this.events.add(createSessionScheduledEvent());
     }
@@ -122,7 +124,10 @@ public class Session {
                 sessionBeginTime.plusNanos(setupTime.toNanos()),
                 sessionEndTime
         );
+    }
 
+    private void calculateSetupDuration(){
+        this.setupTime = Duration.between(sessionBeginTime.plus(movieDuration), sessionEndTime);
     }
 
     private SessionSetupBeginEvent createSessionSetupBeginEvent(){
@@ -208,6 +213,14 @@ public class Session {
         if(movieId == null) throw new SessionException("Id do filme não pode estar nulo.");
         if(roomId == null) throw new SessionException("Id da sala não pode estar nulo.");
         if(sessionScheduleState == null) sessionScheduleState = SessionScheduleState.SCHEDULED;
+
+
+        if(sessionBeginTime.plus(setupTime).isAfter(sessionEndTime))
+            throw new SessionException("A duração do setup não pode ser maior que o tempo total da sessão.");
+
+        if(sessionBeginTime.plus(movieDuration).isAfter(sessionEndTime))
+            throw new SessionException("A duração do filme não pode ser maior que o tempo total da sessão.");
+
     }
 
     public void validateNewSession(){
