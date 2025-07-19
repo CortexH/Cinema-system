@@ -1,4 +1,4 @@
-package com.example.scheduling_service.application.port.in;
+package com.example.scheduling_service.application.port;
 
 // essa classe interage apenas com o scheduler, não com as sessões em si!
 public interface SessionSchedulerUseCase {

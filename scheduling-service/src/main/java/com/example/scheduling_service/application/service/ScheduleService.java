@@ -2,9 +2,10 @@ package com.example.scheduling_service.application.service;
 
 import com.example.scheduling_service.domain.domainEvents.SessionEvent;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.application.port.in.SessionSchedulerUseCase;
-import com.example.scheduling_service.application.port.out.SessionEventPublisherPort;
-import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
+import com.example.scheduling_service.application.port.SessionSchedulerUseCase;
+import com.example.scheduling_service.domain.port.SessionCommandRepositoryPort;
+import com.example.scheduling_service.domain.port.SessionEventPublisherPort;
+import com.example.scheduling_service.domain.port.SessionQueryRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ScheduleService implements SessionSchedulerUseCase {
 
-    private final SessionRepositoryPort sessionPort;
+    private final SessionCommandRepositoryPort commandPort;
+    private final SessionQueryRepositoryPort queryPort;
     private final SessionEventPublisherPort sessionEventPublisher;
 
     @Override
@@ -33,7 +35,7 @@ public class ScheduleService implements SessionSchedulerUseCase {
     @Override
     @Transactional("transactionManager")
     public void runScheduledCheckout() {
-        List<Session> allSessions = sessionPort.findAllSessions();
+        List<Session> allSessions = queryPort.findAllSessions();
 
         List<SessionEvent> eventsToPublish = new ArrayList<>();
         List<Session> changedSessions = new ArrayList<>();
@@ -45,6 +47,6 @@ public class ScheduleService implements SessionSchedulerUseCase {
 
         if(eventsToPublish.isEmpty() && changedSessions.isEmpty()) return;
         if(!eventsToPublish.isEmpty()) sessionEventPublisher.publishAll(eventsToPublish);
-        if(!changedSessions.isEmpty()) sessionPort.saveInBatch(changedSessions);
+        if(!changedSessions.isEmpty()) commandPort.saveInBatch(changedSessions);
     }
 }

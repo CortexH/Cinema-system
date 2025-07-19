@@ -2,7 +2,7 @@ package com.example.scheduling_service.infrastructure.adapter.inbound.web.contro
 
 import com.example.scheduling_service.application.dto.request.SessionRequestDTO;
 import com.example.scheduling_service.application.dto.response.SessionDisplayDTO;
-import com.example.scheduling_service.application.port.in.ScheduledSessionUseCase;
+import com.example.scheduling_service.application.port.ScheduledSessionUseCase;
 import com.example.scheduling_service.domain.model.Session;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import com.example.scheduling_service.infrastructure.adapter.inbound.web.mapper.SessionDisplayMapper;

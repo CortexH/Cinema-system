@@ -2,7 +2,8 @@ package com.example.scheduling_service.infrastructure.adapter.outbound.persisten
 
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
+import com.example.scheduling_service.domain.port.SessionCommandRepositoryPort;
+import com.example.scheduling_service.domain.port.SessionQueryRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.mapper.SessionMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.repository.repository.SessionRepositoryJPA;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class SessionRepositoryAdapter implements SessionRepositoryPort {
+public class SessionRepositoryAdapter implements SessionQueryRepositoryPort, SessionCommandRepositoryPort {
 
     private final SessionRepositoryJPA repository;
 

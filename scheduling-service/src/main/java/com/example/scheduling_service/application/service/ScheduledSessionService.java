@@ -1,8 +1,10 @@
 package com.example.scheduling_service.application.service;
 
+import com.example.scheduling_service.domain.domainServices.SessionDomainService;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.application.port.in.ScheduledSessionUseCase;
-import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
+import com.example.scheduling_service.application.port.ScheduledSessionUseCase;
+import com.example.scheduling_service.domain.port.SessionCommandRepositoryPort;
+import com.example.scheduling_service.domain.port.SessionQueryRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,38 +20,34 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ScheduledSessionService implements ScheduledSessionUseCase {
 
-    private final SessionRepositoryPort sessionRepositoryPort;
+    private final SessionCommandRepositoryPort commandPort;
+    private final SessionQueryRepositoryPort queryPort;
+    private final SessionDomainService sessionDomainService;
 
     @Override
     @Transactional
     public void removeAndReplaceScheduledSession(Boolean replace, SessionIdVO sessionId) {
-        Session session = sessionRepositoryPort.findById(sessionId)
-                        .orElseThrow(() -> new NoSuchElementException("Sessão com o id especificado não encontrada."));
-
-        session.validateIfAbleToRemove();
-
-        sessionRepositoryPort.removeScheduledSession(sessionId);
-
+        sessionDomainService.removeAndReplaceNextSessions(replace, sessionId);
     }
 
     @Override
     public List<Session> findAllSessions(Integer limitDay) {
-        return sessionRepositoryPort.findAllSessions(limitDay);
+        return queryPort.findAllSessions(limitDay);
     }
 
     @Override
     public Session insertNewSession(Session session) {
 
-        Session previousSession = sessionRepositoryPort.findPreviousSession(session).orElse(null);
+        Session previousSession = queryPort.findPreviousSession(session).orElse(null);
 
-        Session nextSession = sessionRepositoryPort.findNextSession(session).orElse(null);
+        Session nextSession = queryPort.findNextSession(session).orElse(null);
 
         session.validateIfOverlapsWith(nextSession);
         session.validateIfOverlapsWith(previousSession);
 
         session.validateNewSession();
 
-        return sessionRepositoryPort.insertNewSession(session);
+        return commandPort.insertNewSession(session);
     }
 
     @Override

@@ -1,10 +1,8 @@
 package com.example.scheduling_service.infrastructure.adapter.outbound.kafka;
 
 import br.com.cinemaSYS.events.scheduler.SchedulerEvent;
-import br.com.cinemaSYS.events.scheduler.SchedulerEventType;
-import br.com.cinemaSYS.events.scheduler.SessionDTO;
 import com.example.scheduling_service.domain.domainEvents.*;
-import com.example.scheduling_service.application.port.out.SessionEventPublisherPort;
+import com.example.scheduling_service.domain.port.SessionEventPublisherPort;
 import com.example.scheduling_service.infrastructure.adapter.outbound.kafka.mapper.SchedulerEventMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

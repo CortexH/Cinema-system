@@ -164,7 +164,6 @@ public class Session {
         );
     }
 
-
     // VALIDATIONS
 
     public void validateIfAbleToRemove(){

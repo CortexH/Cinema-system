@@ -5,8 +5,9 @@ import com.example.scheduling_service.domain.domainEvents.SessionEvent;
 import com.example.scheduling_service.domain.enums.SessionEventType;
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.application.port.out.SessionEventPublisherPort;
-import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
+import com.example.scheduling_service.domain.port.SessionCommandRepositoryPort;
+import com.example.scheduling_service.domain.port.SessionEventPublisherPort;
+import com.example.scheduling_service.domain.port.SessionQueryRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
@@ -33,17 +34,19 @@ public class SessionSchedulingServiceUnitTests {
     @DisplayName("Validar ter uma sessão 'Scheduled' já terminada")
     @Transactional
     public void validarTerUmaSessaoScheduledJaTerminada(){
-        SessionRepositoryPort sessionPort = mock(SessionRepositoryPort.class);
+        SessionQueryRepositoryPort sessionQueryPort = mock(SessionQueryRepositoryPort.class);
+        SessionCommandRepositoryPort sessionCommandPort = mock(SessionCommandRepositoryPort.class);
+
         SessionEventPublisherPort sessionEventPublisher = mock(SessionEventPublisherPort.class);
 
-        when(sessionPort.findAllSessions()).thenReturn(new ArrayList<>(List.of(new Session(
+        when(sessionQueryPort.findAllSessions()).thenReturn(new ArrayList<>(List.of(new Session(
                 SessionIdVO.generate(),
                 UUID.randomUUID(), UUID.randomUUID(),
                 LocalDateTime.now().plusHours(-3), LocalDateTime.now().plusHours(-2),
                 SessionScheduleState.SCHEDULED,
                 Duration.ofMinutes(10), Duration.ofMinutes(45)))));
 
-        ScheduleService service = new ScheduleService(sessionPort, sessionEventPublisher);
+        ScheduleService service = new ScheduleService(sessionCommandPort, sessionQueryPort, sessionEventPublisher);
 
         service.runScheduledCheckout();
 
@@ -63,17 +66,19 @@ public class SessionSchedulingServiceUnitTests {
     @DisplayName("Validar scheduler ao adicionar nova sessão")
     @Transactional
     public void validarAdicionarSessao(){
-        SessionRepositoryPort sessionPort = mock(SessionRepositoryPort.class);
+        SessionQueryRepositoryPort sessionQueryPort = mock(SessionQueryRepositoryPort.class);
+        SessionCommandRepositoryPort sessionCommandPort = mock(SessionCommandRepositoryPort.class);
+
         SessionEventPublisherPort sessionEventPublisher = mock(SessionEventPublisherPort.class);
 
-        when(sessionPort.findAllSessions()).thenReturn(new ArrayList<>(List.of(new Session(
+        when(sessionQueryPort.findAllSessions()).thenReturn(new ArrayList<>(List.of(new Session(
                 SessionIdVO.generate(),
                 UUID.randomUUID(), UUID.randomUUID(),
                 LocalDateTime.now().plusHours(10), LocalDateTime.now().plusHours(11),
                 SessionScheduleState.SCHEDULED,
                 Duration.ofMinutes(10), Duration.ofMinutes(45)))));
 
-        ScheduleService service = new ScheduleService(sessionPort, sessionEventPublisher);
+        ScheduleService service = new ScheduleService(sessionCommandPort, sessionQueryPort, sessionEventPublisher);
 
         service.runScheduledCheckout();
 
@@ -90,7 +95,9 @@ public class SessionSchedulingServiceUnitTests {
     @Test
     @DisplayName("Validar scheduler ao adicionar uma grande quantidade de sessões")
     public void validarSchedulerAoAdicionarMuitasSessoes(){
-        SessionRepositoryPort sessionPort = mock(SessionRepositoryPort.class);
+        SessionQueryRepositoryPort sessionQueryPort = mock(SessionQueryRepositoryPort.class);
+        SessionCommandRepositoryPort sessionCommandPort = mock(SessionCommandRepositoryPort.class);
+
         SessionEventPublisherPort eventPublisherPort = mock(SessionEventPublisherPort.class);
 
         int quantidadeSessoes = (int) Math.round(Math.random() * 100);
@@ -106,9 +113,9 @@ public class SessionSchedulingServiceUnitTests {
                     Duration.ofMinutes(10), Duration.ofMinutes(45)));
         }
 
-        when(sessionPort.findAllSessions()).thenReturn(usedSessions);
+        when(sessionQueryPort.findAllSessions()).thenReturn(usedSessions);
 
-        ScheduleService service = new ScheduleService(sessionPort, eventPublisherPort);
+        ScheduleService service = new ScheduleService(sessionCommandPort, sessionQueryPort, eventPublisherPort);
 
         service.runScheduledCheckout();
 

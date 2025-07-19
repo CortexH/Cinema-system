@@ -1,4 +1,4 @@
-package com.example.scheduling_service.application.port.out;
+package com.example.scheduling_service.domain.port;
 
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
@@ -9,11 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface SessionRepositoryPort {
-
-    void removeScheduledSession(SessionIdVO id);
-    Session insertNewSession(Session session);
-    List<Session> saveInBatch(List<Session> sessions);
+public interface SessionQueryRepositoryPort {
 
     Optional<Session> findById(SessionIdVO id);
     List<Session> findByState(SessionScheduleState state);
@@ -25,7 +21,6 @@ public interface SessionRepositoryPort {
 
     Optional<Session> findNextSession(Session session);
     Optional<Session> findPreviousSession(Session session);
-
 
 
 }

@@ -1,6 +1,6 @@
 package com.example.scheduling_service.infrastructure.adapter.inbound.web.controller;
 
-import com.example.scheduling_service.application.port.in.SessionSchedulerUseCase;
+import com.example.scheduling_service.application.port.SessionSchedulerUseCase;
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
