@@ -16,8 +16,8 @@ public interface SessionQueryRepositoryPort {
     List<Session> findAllSessions(Integer limit);
     List<Session> findAllSessions();
     List<Session> findSessionsOfDeterminedMovie(UUID movieId);
-    List<Session> findSessionsByBeginTimeRange(LocalDateTime first, LocalDateTime last);
-    List<Session> findSessionsByEndTimeRange(LocalDateTime first, LocalDateTime last);
+
+    List<Session> findAllNextSessionsFrom(Session session);
 
     Optional<Session> findNextSession(Session session);
     Optional<Session> findPreviousSession(Session session);

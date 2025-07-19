@@ -25,7 +25,6 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
     private final SessionDomainService sessionDomainService;
 
     @Override
-    @Transactional
     public void removeAndReplaceScheduledSession(Boolean replace, SessionIdVO sessionId) {
         sessionDomainService.removeAndReplaceNextSessions(replace, sessionId);
     }

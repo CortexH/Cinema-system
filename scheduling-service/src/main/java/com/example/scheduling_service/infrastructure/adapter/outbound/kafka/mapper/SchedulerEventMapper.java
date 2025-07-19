@@ -82,6 +82,7 @@ public class SchedulerEventMapper {
                 .setTimestamp(event.timestamp())
                 .setSession(SessionDTO.newBuilder()
                         .setMovieId(event.movieId().toString())
+                        .setRoomId(event.roomId().toString())
                         .setSessionId(event.sessionId().toString())
                         .setSessionEndTime(event.sessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
                         .setSessionBeginTime(event.sessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
@@ -90,6 +91,20 @@ public class SchedulerEventMapper {
                 .build();
     }
 
-
+    public static SchedulerEvent fromSessionRemoved(SessionRemovedEvent event){
+        return SchedulerEvent.newBuilder()
+                .setEventId(UUID.randomUUID().toString())
+                .setEventType(SchedulerEventType.SESSION_REMOVED)
+                .setTimestamp(event.timestamp())
+                .setSession(SessionDTO.newBuilder()
+                        .setMovieId(event.movieId().toString())
+                        .setRoomId(event.roomId().toString())
+                        .setSessionId(event.sessionId().toString())
+                        .setSessionEndTime(event.sessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
+                        .setSessionBeginTime(event.sessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toInstant())
+                        .setMovieDuration(event.movieDuration().toMillis())
+                        .build())
+                .build();
+    }
 
 }

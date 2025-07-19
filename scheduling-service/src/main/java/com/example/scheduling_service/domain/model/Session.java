@@ -164,12 +164,36 @@ public class Session {
         );
     }
 
-    // VALIDATIONS
+    private SessionChangedEvent sessionChangedEvent(){
+        return new SessionChangedEvent(
+                SessionEventType.SESSION_EDITED, Instant.now(),
+                id.value(), movieId, roomId, sessionBeginTime,
+                sessionEndTime, movieDuration
+        );
+    }
 
-    public void validateIfAbleToRemove(){
+    private SessionRemovedEvent sessionRemovedEvent(){
+        return new SessionRemovedEvent(
+                SessionEventType.SESSION_REMOVED, Instant.now(),
+                id.value(), movieId, roomId, sessionBeginTime,
+                sessionEndTime, movieDuration
+        );
+    }
+
+    public void changeSessionTime(Duration duration){
+        this.sessionBeginTime = sessionBeginTime.plus(duration);
+        this.sessionEndTime = sessionEndTime.plus(duration);
+        this.events.add(sessionChangedEvent());
+    }
+
+    public void removeSession(){
         if(this.sessionBeginTime.isBefore(LocalDateTime.now().plusDays(1)))
             throw new SessionException("não é possível remover sessões com menos de um dia para iniciar");
+
+        this.events.add(sessionRemovedEvent());
     }
+
+    // VALIDATIONS
 
     public void validateIfOverlapsWith(Session that){
         if (that == null) {
@@ -228,6 +252,10 @@ public class Session {
     }
 
     // get / set
+
+    public Duration getTotalSessionDuration(){
+        return Duration.between(sessionBeginTime, sessionEndTime);
+    }
 
     public List<SessionEvent> pullDomainEvents(){
         if(this.events.isEmpty()){

@@ -68,16 +68,11 @@ public class SessionRepositoryAdapter implements SessionQueryRepositoryPort, Ses
     }
 
     @Override
-    public List<Session> findSessionsByBeginTimeRange(LocalDateTime first, LocalDateTime last) {
-        return new ArrayList<>(repository.findSessionsByBeginDateTimeRange(first, last)
+    public List<Session> findAllNextSessionsFrom(Session session) {
+        return new ArrayList<>(repository.findAllNextSessionsFrom(session.getSessionBeginTime(), session.getId().value())
                 .stream().map(SessionMapper::toInbound).toList());
     }
 
-    @Override
-    public List<Session> findSessionsByEndTimeRange(LocalDateTime first, LocalDateTime last) {
-        return new ArrayList<>(repository.findSessionsByEndDateTimeRange(first, last)
-                .stream().map(SessionMapper::toInbound).toList());
-    }
 
     @Override
     public Optional<Session> findNextSession(Session session) {

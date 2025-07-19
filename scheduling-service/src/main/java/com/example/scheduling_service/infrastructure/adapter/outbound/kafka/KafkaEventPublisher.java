@@ -42,15 +42,10 @@ public class KafkaEventPublisher implements SessionEventPublisherPort {
 
     @Override
     public void publishAll(List<SessionEvent> sessionEvents){
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                for (SessionEvent contractEvent : sessionEvents){
-                    SchedulerEvent event = getEvent(contractEvent);
-                    publishSessionEvent(event);
-                }
-            }
-        });
+        for (SessionEvent contractEvent : sessionEvents){
+            SchedulerEvent event = getEvent(contractEvent);
+            publishSessionEvent(event);
+        }
     }
 
     private SchedulerEvent getEvent(SessionEvent model){
@@ -60,6 +55,7 @@ public class KafkaEventPublisher implements SessionEventPublisherPort {
             case SessionSetupBeginEvent event -> SchedulerEventMapper.fromSessionSetupBegin(event);
             case SessionScheduledEvent event -> SchedulerEventMapper.fromSessionScheduled(event);
             case SessionNearToBeginEvent event -> SchedulerEventMapper.fromSessionNearToBegin(event);
+            case SessionRemovedEvent event -> SchedulerEventMapper.fromSessionRemoved(event);
             default -> throw new IllegalArgumentException("Tipo de evento não mapeado: " + model.getClass());
         };
     }

@@ -82,4 +82,14 @@ public interface SessionRepositoryJPA extends JpaRepository<SessionEntity, UUID>
             @Param("excluded") UUID excluded
     );
 
+    @Query(nativeQuery = true,
+            value = "SELECT * FROM session_queue s " +
+                    "WHERE s.session_begin_time >= :beginTime " +
+                    "AND s.id != :excluded"
+    )
+    List<SessionEntity> findAllNextSessionsFrom(
+            @Param("beginTime") LocalDateTime time,
+            @Param("excluded") UUID excluded
+    );
+
 }
