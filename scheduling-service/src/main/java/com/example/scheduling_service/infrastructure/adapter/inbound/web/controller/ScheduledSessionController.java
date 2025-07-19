@@ -7,6 +7,7 @@ import com.example.scheduling_service.domain.model.Session;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import com.example.scheduling_service.infrastructure.adapter.inbound.web.mapper.SessionDisplayMapper;
 import com.example.scheduling_service.infrastructure.adapter.inbound.web.mapper.SessionRequestDTOMapper;
+import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class ScheduledSessionController {
 
     @PostMapping
     public ResponseEntity<SessionDisplayDTO> insertNewSession(
-            @RequestBody SessionRequestDTO body
+            @RequestBody @Valid SessionRequestDTO body
     ){
         Session session = sessionUseCase.insertNewSession(SessionRequestDTOMapper.toInbound(body));
         return ResponseEntity.status(HttpStatus.CREATED).body(SessionDisplayMapper.toDTO(session));
@@ -46,7 +47,7 @@ public class ScheduledSessionController {
     @PutMapping
     public ResponseEntity<?> editSession(
             @PathParam("sessionId") String sessionId,
-            @RequestBody SessionRequestDTO body
+            @RequestBody @Valid SessionRequestDTO body
     ){
         return ResponseEntity.noContent().build();
     }
