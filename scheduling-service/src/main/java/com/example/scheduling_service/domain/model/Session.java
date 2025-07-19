@@ -3,6 +3,7 @@ package com.example.scheduling_service.domain.model;
 import com.example.scheduling_service.domain.domainEvents.*;
 import com.example.scheduling_service.domain.enums.SessionEventType;
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
+import com.example.scheduling_service.domain.exception.SessionConflictException;
 import com.example.scheduling_service.domain.exception.SessionException;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 
@@ -180,7 +181,7 @@ public class Session {
                 || start_B.equals(start_A) || end_A.equals(end_B);
 
         if (overlaps) {
-            throw new SessionException("Conflito de horário: a sessão se sobrepõe com uma sessão existente que ocorre de "
+            throw new SessionConflictException("Conflito de horário: a sessão se sobrepõe com uma sessão existente que ocorre de "
                     + start_B + " até " + end_B);
         }
     }
