@@ -10,6 +10,7 @@ public record SessionDisplayDTO(
         String movie_id,
         LocalDateTime session_begin_time,
         LocalDateTime session_end_time,
-        Long movie_duration
+        Long movie_duration,
+        Long setup_duration
 ) {
 }

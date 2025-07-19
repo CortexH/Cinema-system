@@ -12,7 +12,8 @@ public class SessionDisplayMapper {
                 session.getMovieId().toString(),
                 session.getSessionBeginTime(),
                 session.getSessionEndTime(),
-                session.getMovieDuration().toSeconds()
+                session.getMovieDuration().toSeconds(),
+                session.getSetupTime().toSeconds()
         );
     }
 
