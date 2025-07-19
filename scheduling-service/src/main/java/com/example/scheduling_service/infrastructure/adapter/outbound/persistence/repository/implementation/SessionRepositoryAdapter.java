@@ -80,11 +80,13 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
 
     @Override
     public Optional<Session> findNextSession(Session session) {
-        return Optional.empty();
+        return repository.findNextSession(session.getSessionBeginTime(), session.getId().value())
+                .map(SessionMapper::toInbound);
     }
 
     @Override
     public Optional<Session> findPreviousSession(Session session) {
-        return Optional.empty();
+        return repository.findPreviousSession(session.getSessionBeginTime(), session.getId().value())
+                .map(SessionMapper::toInbound);
     }
 }

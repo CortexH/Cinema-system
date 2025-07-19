@@ -1,6 +1,5 @@
 package com.example.scheduling_service.application.service;
 
-import com.example.scheduling_service.domain.exception.SessionException;
 import com.example.scheduling_service.domain.model.Session;
 import com.example.scheduling_service.application.port.in.ScheduledSessionUseCase;
 import com.example.scheduling_service.application.port.out.SessionRepositoryPort;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -32,8 +30,6 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
 
         sessionRepositoryPort.removeScheduledSession(sessionId);
 
-
-
     }
 
     @Override
@@ -44,17 +40,14 @@ public class ScheduledSessionService implements ScheduledSessionUseCase {
     @Override
     public Session insertNewSession(Session session) {
 
-        Session previousSession = sessionRepositoryPort.findPreviousSession(session)
-                .orElse(null);
+        Session previousSession = sessionRepositoryPort.findPreviousSession(session).orElse(null);
 
-        Session nextSession = sessionRepositoryPort.findNextSession(session)
-                .orElse(null);
+        Session nextSession = sessionRepositoryPort.findNextSession(session).orElse(null);
 
-        log.info("PREVIOUS :: {}", previousSession);
-        log.info("NEXT :: {}", previousSession);
+        session.validateIfOverlapsWith(nextSession);
+        session.validateIfOverlapsWith(previousSession);
 
-        session.validateIfCompatibleWithNextSession(nextSession);
-        session.validateIfCompatibleWithPreviousSession(previousSession);
+        session.validateNewSession();
 
         return sessionRepositoryPort.insertNewSession(session);
     }

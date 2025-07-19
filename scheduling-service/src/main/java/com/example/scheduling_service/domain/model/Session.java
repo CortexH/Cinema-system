@@ -166,24 +166,23 @@ public class Session {
             throw new SessionException("não é possível remover sessões com menos de um dia para iniciar");
     }
 
-    public void validateIfCompatibleWithPreviousSession(Session previous) {
-        if(previous == null) return;
+    public void validateIfOverlapsWith(Session that){
+        if (that == null) {
+            return;
+        }
 
-        if(previous.getSessionBeginTime().isBefore(sessionBeginTime)
-                && previous.getSessionBeginTime().isBefore(sessionEndTime)
-                && previous.getSessionEndTime().isBefore(sessionBeginTime)
-                && previous.getSessionEndTime().isBefore(sessionEndTime))
-            throw new SessionException("A sessão anterior já está agendada nesse horário.");
-    }
+        LocalDateTime start_A = this.sessionBeginTime;
+        LocalDateTime end_A = this.sessionEndTime;
+        LocalDateTime start_B = that.getSessionBeginTime();
+        LocalDateTime end_B = that.getSessionEndTime();
 
-    public void validateIfCompatibleWithNextSession(Session next){
-        if(next == null) return;
+        boolean overlaps = (start_A.isBefore(end_B) && start_B.isBefore(end_A))
+                || start_B.equals(start_A) || end_A.equals(end_B);
 
-        if(next.getSessionBeginTime().isAfter(sessionBeginTime)
-                && next.getSessionBeginTime().isAfter(sessionEndTime)
-                && next.getSessionEndTime().isAfter(sessionBeginTime)
-                && next.getSessionEndTime().isAfter(sessionEndTime))
-            throw new SessionException("A sessão posterior já está agendada nesse horário.");
+        if (overlaps) {
+            throw new SessionException("Conflito de horário: a sessão se sobrepõe com uma sessão existente que ocorre de "
+                    + start_B + " até " + end_B);
+        }
     }
 
     private boolean hasSessionPeriodBegun() {
@@ -208,6 +207,11 @@ public class Session {
         if(movieId == null) throw new SessionException("Id do filme não pode estar nulo.");
         if(roomId == null) throw new SessionException("Id da sala não pode estar nulo.");
         if(sessionScheduleState == null) sessionScheduleState = SessionScheduleState.SCHEDULED;
+    }
+
+    public void validateNewSession(){
+        if(this.sessionEndTime.isBefore(LocalDateTime.now()))
+            throw new SessionException("Não é possível criar uma sessão anterior à data de hoje.");
     }
 
     // get / set
