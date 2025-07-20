@@ -1,17 +1,27 @@
 package com.example.scheduling_service.infrastructure.adapter.inbound.web;
 
 import com.example.scheduling_service.application.dto.request.SessionRequestDTO;
+import com.example.scheduling_service.application.dto.response.SessionDisplayDTO;
+import com.example.scheduling_service.domain.domainEvents.SessionEvent;
 import com.example.scheduling_service.domain.model.Session;
+import com.example.scheduling_service.domain.port.SessionEventPublisherPort;
 import com.example.scheduling_service.infrastructure.adapter.inbound.web.mapper.SessionRequestDTOMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.mapper.SessionMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.repository.repository.SessionRepositoryJPA;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.validator.Arg;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -22,10 +32,13 @@ import org.springframework.util.Assert;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
+@Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -35,6 +48,9 @@ public class ScheduledSessionsIntegrationTests {
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
     private final SessionRepositoryJPA sessionRepository;
+
+    @MockBean
+    private final SessionEventPublisherPort sessionEventPort;
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
@@ -116,6 +132,187 @@ public class ScheduledSessionsIntegrationTests {
                 .content(request))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.setup_duration").value(setupDuration.toSeconds() + addedSeconds));
+    }
+
+    @Test
+    @DisplayName("Validar realizar remoção de sessão com 'replace' como 'true' ")
+    void validateSessionRemoveWithReplace() throws Exception {
+
+        LocalDateTime firstSessionBeginTime = LocalDateTime.now().plusDays(2);
+        LocalDateTime firstSessionEndTime = firstSessionBeginTime.plus(Duration.ofHours(2));
+
+        LocalDateTime secondSessionEndTime = firstSessionEndTime.plus(Duration.ofHours(2));
+
+        Duration firstSessionTotalDuration = Duration.between(firstSessionBeginTime, firstSessionEndTime).negated();
+
+        SessionRequestDTO firstSession = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                firstSessionBeginTime.format(dateTimeFormatter),
+                firstSessionEndTime.format(dateTimeFormatter),
+                3000L, null
+        );
+
+        SessionRequestDTO secondSession = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                firstSessionEndTime.format(dateTimeFormatter),
+                secondSessionEndTime.format(dateTimeFormatter),
+                3000L, null
+        );
+
+        String firstRequest = objectMapper.writeValueAsString(firstSession);
+        String secondRequest = objectMapper.writeValueAsString(secondSession);
+
+        String firstResponse = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/v1/scheduler-sessions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(firstRequest))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String secondResponse = mockMvc.perform(MockMvcRequestBuilders
+                        .post("/api/v1/scheduler-sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(secondRequest))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+
+
+        SessionDisplayDTO firstData = objectMapper.readValue(firstResponse, SessionDisplayDTO.class);
+        UUID firstId = firstData.session_id();
+
+        SessionDisplayDTO secondData = objectMapper.readValue(secondResponse, SessionDisplayDTO.class);
+        UUID secondId = secondData.session_id();
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(
+                "/api/v1/scheduler-sessions/{id}?replace={replace}",
+                firstId, "true"))
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
+
+        List<Session> sessions = sessionRepository.findAll()
+                .stream().map(SessionMapper::toInbound).toList();
+
+        Session notRemovedSession = sessions.stream().filter(i -> i.getId().value().equals(secondId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Sessão com o id " + secondId + " não foi encontrada"));
+
+        boolean isBeginCorrect = notRemovedSession.getSessionBeginTime().truncatedTo(ChronoUnit.SECONDS)
+                        .isEqual(firstSessionEndTime.truncatedTo(ChronoUnit.SECONDS).plus(firstSessionTotalDuration));
+
+        Assert.isTrue(
+                isBeginCorrect,
+                "O tempo de inicio da sessão não confere com o tempo que deveria ser.\n" +
+                        "Tempo esperado: " + firstSessionEndTime.truncatedTo(ChronoUnit.SECONDS).plus(firstSessionTotalDuration) +
+                        "\nTempo atual: " + notRemovedSession.getSessionBeginTime()
+        );
+
+        boolean isEndCorrect = notRemovedSession.getSessionEndTime().truncatedTo(ChronoUnit.SECONDS)
+                        .isEqual(secondSessionEndTime.truncatedTo(ChronoUnit.SECONDS).plus(firstSessionTotalDuration));
+
+        Assert.isTrue(
+                isEndCorrect,
+                "O tempo de inicio da sessão não confere com o tempo que deveria ser.\n" +
+                        "Tempo esperado: " + firstSessionBeginTime +
+                        "\nTempo atual: " + notRemovedSession.getSessionBeginTime()
+        );
+
+        ArgumentCaptor<List<SessionEvent>> eventListCaptor = ArgumentCaptor.forClass(List.class);
+
+        Mockito.verify(sessionEventPort, Mockito.times(1)).publishAll(eventListCaptor.capture());
+
+        List<SessionEvent> events = eventListCaptor.getValue();
+
+        Assertions.assertThat(events.size()).isEqualTo(4);
+
+    }
+
+    @Test
+    @DisplayName("Validar realizar remoção de sessão com 'replace' como 'false' ")
+    void validateSessionRemoveWithoutReplace() throws Exception {
+        LocalDateTime firstSessionBeginTime = LocalDateTime.now().plusDays(2);
+        LocalDateTime firstSessionEndTime = firstSessionBeginTime.plus(Duration.ofHours(2));
+
+        LocalDateTime secondSessionEndTime = firstSessionEndTime.plus(Duration.ofHours(2));
+
+        SessionRequestDTO firstSession = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                firstSessionBeginTime.format(dateTimeFormatter),
+                firstSessionEndTime.format(dateTimeFormatter),
+                3000L, null
+        );
+
+        SessionRequestDTO secondSession = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                firstSessionEndTime.format(dateTimeFormatter),
+                secondSessionEndTime.format(dateTimeFormatter),
+                3000L, null
+        );
+
+        String firstRequest = objectMapper.writeValueAsString(firstSession);
+        String secondRequest = objectMapper.writeValueAsString(secondSession);
+
+        String firstResponse = mockMvc.perform(MockMvcRequestBuilders
+                        .post("/api/v1/scheduler-sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(firstRequest))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String secondResponse = mockMvc.perform(MockMvcRequestBuilders
+                        .post("/api/v1/scheduler-sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(secondRequest))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+
+
+        SessionDisplayDTO firstData = objectMapper.readValue(firstResponse, SessionDisplayDTO.class);
+        UUID firstId = firstData.session_id();
+
+        SessionDisplayDTO secondData = objectMapper.readValue(secondResponse, SessionDisplayDTO.class);
+        UUID secondId = secondData.session_id();
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(
+                        "/api/v1/scheduler-sessions/{id}?replace={replace}",
+                        firstId, "false"))
+                .andExpect(MockMvcResultMatchers.status().isAccepted());
+
+        List<Session> sessions = sessionRepository.findAll()
+                .stream().map(SessionMapper::toInbound).toList();
+
+        Session notRemovedSession = sessions.stream().filter(i -> i.getId().value().equals(secondId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Sessão com o id " + secondId + " não foi encontrada"));
+
+        boolean isBeginCorrect = notRemovedSession.getSessionBeginTime().truncatedTo(ChronoUnit.SECONDS)
+                .isEqual(firstSessionEndTime.truncatedTo(ChronoUnit.SECONDS));
+
+        Assert.isTrue(
+                isBeginCorrect,
+                "O tempo de inicio da sessão não confere com o tempo que deveria ser.\n" +
+                        "Tempo esperado: " + firstSessionEndTime.truncatedTo(ChronoUnit.SECONDS) +
+                        "\nTempo atual: " + notRemovedSession.getSessionBeginTime()
+        );
+
+        boolean isEndCorrect = notRemovedSession.getSessionEndTime().truncatedTo(ChronoUnit.SECONDS)
+                .isEqual(secondSessionEndTime.truncatedTo(ChronoUnit.SECONDS));
+
+        Assert.isTrue(
+                isEndCorrect,
+                "O tempo de inicio da sessão não confere com o tempo que deveria ser.\n" +
+                        "Tempo esperado: " + secondSessionEndTime.truncatedTo(ChronoUnit.SECONDS) +
+                        "\nTempo atual: " + notRemovedSession.getSessionEndTime().truncatedTo(ChronoUnit.SECONDS)
+        );
+
     }
 
     // FAIL SCENARIOS

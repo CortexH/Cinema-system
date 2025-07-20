@@ -56,6 +56,7 @@ public class KafkaEventPublisher implements SessionEventPublisherPort {
             case SessionScheduledEvent event -> SchedulerEventMapper.fromSessionScheduled(event);
             case SessionNearToBeginEvent event -> SchedulerEventMapper.fromSessionNearToBegin(event);
             case SessionRemovedEvent event -> SchedulerEventMapper.fromSessionRemoved(event);
+            case SessionChangedEvent event -> SchedulerEventMapper.fromSessionChanged(event);
             default -> throw new IllegalArgumentException("Tipo de evento não mapeado: " + model.getClass());
         };
     }

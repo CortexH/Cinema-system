@@ -38,7 +38,7 @@ public class SessionDomainService {
 
         commandPort.removeScheduledSession(sessionIdToRemove);
 
-        if(!replace){
+        if(replace){
             List<Session> nextSessions = queryPort.findAllNextSessionsFrom(session);
 
             Duration deletedSessionDuration = session.getTotalSessionDuration()
