@@ -10,5 +10,6 @@ public class SchedulingServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SchedulingServiceApplication.class, args);
 	}
-	//return Meusbagos; meus bagos o caraio seu nigger
+	// Só agora eu vi o que colocaram aqui. Decepcionante, sinceramente.
+	// Nota mental: NUNCA DEIXE O COMPUTADOR LIGADO EM LUGARES COM PESSOAS QUE PODEM ESTRAGAR AS SUAS COISAS.
 }
