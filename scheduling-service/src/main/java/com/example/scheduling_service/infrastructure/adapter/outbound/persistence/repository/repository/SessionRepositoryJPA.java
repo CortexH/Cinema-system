@@ -60,10 +60,13 @@ public interface SessionRepositoryJPA extends JpaRepository<SessionEntity, UUID>
     );
 
     @Query(nativeQuery = true,
-            value = "SELECT * FROM session_queue s " +
-                    "WHERE s.session_begin_time >= :beginTime " +
-                    "AND s.id != :excluded " +
-                    "LIMIT 1"
+            value = """
+        SELECT * FROM session_queue s
+        WHERE s.session_begin_time >= :beginTime
+        AND s.id != :excluded
+        ORDER BY s.session_begin_time ASC
+        LIMIT 1
+        """
     )
     Optional<SessionEntity> findNextSession(
             @Param("beginTime") LocalDateTime time,
@@ -71,10 +74,13 @@ public interface SessionRepositoryJPA extends JpaRepository<SessionEntity, UUID>
     );
 
     @Query(nativeQuery = true,
-            value = "SELECT * FROM session_queue s " +
-                    "WHERE s.session_begin_time <= :beginTime " +
-                    "AND s.id != :excluded " +
-                    "LIMIT 1"
+            value = """
+        SELECT * FROM session_queue s
+        WHERE s.session_begin_time <= :beginTime
+        AND s.id != :excluded
+        ORDER BY s.session_begin_time DESC
+        LIMIT 1
+    """
 
     )
     Optional<SessionEntity> findPreviousSession(

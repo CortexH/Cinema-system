@@ -205,8 +205,7 @@ public class Session {
         LocalDateTime start_B = that.getSessionBeginTime();
         LocalDateTime end_B = that.getSessionEndTime();
 
-        boolean overlaps = (start_A.isBefore(end_B) && start_B.isBefore(end_A))
-                || start_B.equals(start_A) || end_A.equals(end_B);
+        boolean overlaps = start_A.isBefore(end_B) && end_A.isAfter(start_B);
 
         if (overlaps) {
             throw new SessionConflictException("Conflito de horário: a sessão se sobrepõe com uma sessão existente que ocorre de "
