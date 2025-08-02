@@ -1,26 +1,34 @@
 package com.example.scheduling_service.application.service;
 
 import com.example.scheduling_service.domain.domainEvents.SessionEvent;
+import com.example.scheduling_service.domain.dtos.SessionEditDTO;
 import com.example.scheduling_service.domain.model.Session;
 import com.example.scheduling_service.application.port.SessionSchedulerUseCase;
-import com.example.scheduling_service.domain.port.SessionCommandRepositoryPort;
-import com.example.scheduling_service.domain.port.SessionEventPublisherPort;
-import com.example.scheduling_service.domain.port.SessionQueryRepositoryPort;
+import com.example.scheduling_service.domain.model.SessionEditCommand;
+import com.example.scheduling_service.domain.port.session.SessionCommandRepositoryPort;
+import com.example.scheduling_service.domain.port.session.SessionEventPublisherPort;
+import com.example.scheduling_service.domain.port.session.SessionQueryRepositoryPort;
+import com.example.scheduling_service.domain.port.sessionEdit.SessionEditCommandPort;
+import com.example.scheduling_service.domain.port.sessionEdit.SessionEditQueryPort;
+import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-@Component
+@Slf4j
+@Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ScheduleService implements SessionSchedulerUseCase {
 
-    private final SessionCommandRepositoryPort commandPort;
-    private final SessionQueryRepositoryPort queryPort;
+    private final SessionCommandRepositoryPort sessionCommandPort;
+    private final SessionQueryRepositoryPort sessionQueryPort;
     private final SessionEventPublisherPort sessionEventPublisher;
+
+    private final SessionEditQueryPort sessionEditQueryPort;
+    private final SessionEditCommandPort sessionEditCommandPort;
 
     @Override
     public void scheduleNextSessions(Integer days) {
@@ -32,21 +40,43 @@ public class ScheduleService implements SessionSchedulerUseCase {
 
     }
 
+    // Estruturar melhor ambos esses métodos.
     @Override
-    @Transactional("transactionManager")
+    //@Transactional("transactionManager")
     public void runScheduledCheckout() {
-        List<Session> allSessions = queryPort.findAllSessions();
+        List<Session> allSessions = findSessions();
 
         List<SessionEvent> eventsToPublish = new ArrayList<>();
-        List<Session> changedSessions = new ArrayList<>();
 
         for(Session s : allSessions){
-            if(s.syncStateWithLocalTime()) changedSessions.add(s);
+            s.syncStateWithLocalTime();
             eventsToPublish.addAll(s.pullDomainEvents());
         }
 
-        if(eventsToPublish.isEmpty() && changedSessions.isEmpty()) return;
         if(!eventsToPublish.isEmpty()) sessionEventPublisher.publishAll(eventsToPublish);
-        if(!changedSessions.isEmpty()) commandPort.saveInBatch(changedSessions);
     }
+
+    private List<Session> findSessions(){
+        List<SessionEditCommand> commands = sessionEditQueryPort.findAllPendingOrdered();
+        List<Session> allSessions = sessionQueryPort.findAllSessions();
+
+        for(SessionEditCommand command : commands){
+            SessionEditDTO dto = new SessionEditDTO(
+                    command.movieId(), command.roomId(),
+                    command.sessionBeginTime(), command.sessionEndTime(),
+                    command.setupTime(), command.movieDuration(),
+                    command.sessionScheduleState());
+
+            Session session = allSessions.stream().filter(i -> i.getId().value().equals(command.relatedSessionId()))
+                    .findFirst().orElse(null);
+
+            if(session == null) continue;
+
+            session.editSession(dto);
+        }
+
+        return allSessions;
+
+    }
+
 }

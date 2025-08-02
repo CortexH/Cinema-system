@@ -138,6 +138,87 @@ public class SchedulerEventMapper {
                 .build();
     }
 
+    public static SessionEvent toSessionEvent(SchedulerEvent event){
+        return switch (event.getEventType()){
+            case SESSION_ADDED -> new SessionScheduledEvent(
+                    SessionEventType.SESSION_ADDED, event.getTimestamp(),
+                    UUID.fromString(event.getSession().getSessionId()),
+                    UUID.fromString(event.getSession().getMovieId()),
+                    UUID.fromString(event.getSession().getRoomId()),
+                    (event.getSession().getSessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                    event.getSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime(),
+                    Duration.ofMillis(event.getSession().getMovieDuration())
+            );
+            case SESSION_NEAR_TO_BEGIN -> new SessionNearToBeginEvent(
+                    SessionEventType.SESSION_NEAR_TO_BEGIN, event.getTimestamp(),
+                    UUID.fromString(event.getSession().getSessionId()),
+                    UUID.fromString(event.getSession().getMovieId()),
+                    UUID.fromString(event.getSession().getRoomId()),
+                    (event.getSession().getSessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                    event.getSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime(),
+                    Duration.ofMillis(event.getSession().getMovieDuration())
+            );
+            case SESSION_BEGIN -> new SessionBeginEvent(
+                    SessionEventType.SESSION_BEGIN, event.getTimestamp(),
+                    UUID.fromString(event.getSession().getSessionId()),
+                    UUID.fromString(event.getSession().getMovieId()),
+                    UUID.fromString(event.getSession().getRoomId()),
+                    (event.getSession().getSessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                    event.getSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime(),
+                    Duration.ofMillis(event.getSession().getMovieDuration())
+            );
+            case SESSION_ENDED -> new SessionEndEvent(
+                    SessionEventType.SESSION_ENDED, event.getTimestamp(),
+                    UUID.fromString(event.getSession().getSessionId()),
+                    UUID.fromString(event.getSession().getMovieId()),
+                    UUID.fromString(event.getSession().getRoomId()),
+                    (event.getSession().getSessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                    event.getSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime(),
+                    Duration.ofMillis(event.getSession().getMovieDuration())
+            );
+            case SESSION_EDITED -> new SessionChangedEvent(
+                    SessionEventType.SESSION_EDITED, event.getTimestamp(),
+                    UUID.fromString(event.getSession().getSessionId()),
+                    UUID.fromString(event.getSession().getMovieId()),
+                    UUID.fromString(event.getSession().getRoomId()),
+                    (event.getSession().getSessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                    event.getSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime(),
+                    Duration.ofMillis(event.getSession().getMovieDuration()),
+                    new Session(
+                            SessionIdVO.from(event.getNewSession().getSessionId()),
+                            UUID.fromString(event.getNewSession().getMovieId()),
+                            UUID.fromString(event.getNewSession().getRoomId()),
+                            (event.getNewSession().getSessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                            (event.getNewSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                            Duration.ofMillis(event.getNewSession().getSetupDuration()),
+                            Duration.ofMillis(event.getNewSession().getMovieDuration()),
+                            stateFromEvent(event.getNewSession().getSessionState()),
+                            event.getNewSession().getRemoved()
+                    )
+            );
+            case SESSION_REMOVED -> new SessionRemovedEvent(
+                    SessionEventType.SESSION_REMOVED, event.getTimestamp(),
+                    UUID.fromString(event.getSession().getSessionId()),
+                    UUID.fromString(event.getSession().getMovieId()),
+                    UUID.fromString(event.getSession().getRoomId()),
+                    (event.getSession().getSessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                    event.getSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime(),
+                    Duration.ofMillis(event.getSession().getMovieDuration())
+            );
+        };
+    }
+
+    public static SessionScheduleState stateFromEvent(sessionScheduledState state){
+        if(state == null) return null;
+        return switch (state){
+            case PENDING -> null;
+            case SCHEDULED -> SessionScheduleState.SCHEDULED;
+            case SETUP_IN_PROGRESS -> SessionScheduleState.SETUP_IN_PROGRESS;
+            case NOW_WORKING -> SessionScheduleState.NOW_WORKING;
+            case FINISHED -> SessionScheduleState.FINISHED;
+        };
+    }
+
     public static sessionScheduledState stateToEvent(SessionScheduleState state){
         if(state == null) return null;
         return switch (state){

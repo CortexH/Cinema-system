@@ -1,4 +1,4 @@
-package com.example.scheduling_service.domain.port;
+package com.example.scheduling_service.domain.port.session;
 
 import com.example.scheduling_service.domain.domainEvents.SessionEvent;
 
