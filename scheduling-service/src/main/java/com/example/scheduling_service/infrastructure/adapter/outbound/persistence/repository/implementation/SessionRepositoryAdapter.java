@@ -2,8 +2,8 @@ package com.example.scheduling_service.infrastructure.adapter.outbound.persisten
 
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.domain.port.SessionCommandRepositoryPort;
-import com.example.scheduling_service.domain.port.SessionQueryRepositoryPort;
+import com.example.scheduling_service.domain.port.session.SessionCommandRepositoryPort;
+import com.example.scheduling_service.domain.port.session.SessionQueryRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.mapper.SessionMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.repository.repository.SessionRepositoryJPA;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +28,7 @@ public class SessionRepositoryAdapter implements SessionQueryRepositoryPort, Ses
     }
 
     @Override
-    public Session insertNewSession(Session session) {
+    public Session saveSession(Session session) {
         return SessionMapper.toInbound(repository.save(SessionMapper.toOutbound(session)));
     }
 
@@ -45,6 +44,12 @@ public class SessionRepositoryAdapter implements SessionQueryRepositoryPort, Ses
     public Optional<Session> findById(SessionIdVO id) {
         return repository.findById(id.value())
                 .map(SessionMapper::toInbound);
+    }
+
+    @Override
+    public List<Session> findByIdList(List<SessionIdVO> ids) {
+        return new ArrayList<>(repository.findAllById(ids.stream().map(SessionIdVO::value).toList())
+                .stream().map(SessionMapper::toInbound).toList());
     }
 
     @Override
@@ -72,7 +77,6 @@ public class SessionRepositoryAdapter implements SessionQueryRepositoryPort, Ses
         return new ArrayList<>(repository.findAllNextSessionsFrom(session.getSessionBeginTime(), session.getId().value())
                 .stream().map(SessionMapper::toInbound).toList());
     }
-
 
     @Override
     public Optional<Session> findNextSession(Session session) {

@@ -1,10 +1,11 @@
 package com.example.scheduling_service.domain.domainServices;
 
-import com.example.scheduling_service.domain.domainEvents.SessionEvent;
+import com.example.scheduling_service.domain.domainEvents.*;
+import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.model.Session;
-import com.example.scheduling_service.domain.port.SessionCommandRepositoryPort;
-import com.example.scheduling_service.domain.port.SessionEventPublisherPort;
-import com.example.scheduling_service.domain.port.SessionQueryRepositoryPort;
+import com.example.scheduling_service.domain.port.session.SessionCommandRepositoryPort;
+import com.example.scheduling_service.domain.port.session.SessionEventPublisherPort;
+import com.example.scheduling_service.domain.port.session.SessionQueryRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 
 import java.time.Duration;
@@ -15,44 +16,48 @@ import java.util.NoSuchElementException;
 public class SessionDomainService {
 
     private final SessionQueryRepositoryPort queryPort;
-    private final SessionCommandRepositoryPort commandPort;
-    private final SessionEventPublisherPort eventPublisherPort;
 
     public SessionDomainService(
-            SessionQueryRepositoryPort queryPort,
-            SessionCommandRepositoryPort commandPort,
-            SessionEventPublisherPort publisher
+            SessionQueryRepositoryPort queryPort
     ){
         this.queryPort = queryPort;
-        this.commandPort = commandPort;
-        this.eventPublisherPort = publisher;
     }
 
-    public void removeAndReplaceNextSessions(boolean replace, SessionIdVO sessionIdToRemove){
-        Session session = queryPort.findById(sessionIdToRemove)
-                .orElseThrow(() -> new NoSuchElementException("Sessão com o id especificado não encontrada."));
+    private Session getSession(SessionIdVO id){
+        return queryPort.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Sessão com identificador " + id + " não foi encontrada."));
+    }
 
-        session.removeSession();
+    public Session handleScheduledEvent(SessionScheduledEvent event){
+        Session usedSession = getSession(SessionIdVO.from(event.sessionId()));
+        usedSession.markSessionAs(SessionScheduleState.SCHEDULED);
+        return usedSession;
+    }
 
-        List<SessionEvent> events = new ArrayList<>(session.pullDomainEvents());
+    public Session handleSessionNearToBegin(SessionNearToBeginEvent event){
+        return getSession(SessionIdVO.from(event.sessionId()));
+    }
 
-        commandPort.removeScheduledSession(sessionIdToRemove);
+    public Session handleSessionSetup(SessionSetupBeginEvent event){
+        Session usedSession = getSession(SessionIdVO.from(event.sessionId()));
+        usedSession.markSessionAs(SessionScheduleState.SETUP_IN_PROGRESS);
+        return usedSession;
+    }
 
-        if(replace){
-            List<Session> nextSessions = queryPort.findAllNextSessionsFrom(session);
+    public Session handleSessionBegin(SessionBeginEvent event){
+        Session usedSession = getSession(SessionIdVO.from(event.sessionId()));
+        usedSession.markSessionAs(SessionScheduleState.NOW_WORKING);
+        return usedSession;
+    }
 
-            Duration deletedSessionDuration = session.getTotalSessionDuration()
-                    .negated();
+    public Session handleSessionEndedEvent(SessionEndEvent event){
+        Session usedSession = getSession(SessionIdVO.from(event.sessionId()));
+        usedSession.markSessionAs(SessionScheduleState.FINISHED);
+        return usedSession;
+    }
 
-            for(Session that : nextSessions){
-                that.changeSessionTime(deletedSessionDuration);
-                events.addAll(that.pullDomainEvents());
-            }
-            commandPort.saveInBatch(nextSessions);
-        }
-
-        eventPublisherPort.publishAll(events);
-
+    public Session handleSessionRemoved(SessionRemovedEvent event){
+        return getSession(SessionIdVO.from(event.sessionId()));
     }
 
 }
