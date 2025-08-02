@@ -7,20 +7,23 @@ import com.example.scheduling_service.infrastructure.adapter.outbound.persistenc
 public class SessionMapper {
 
     public static Session toInbound(SessionEntity entity){
+        if(entity == null) return null;
         return new Session(
                 SessionIdVO.from(entity.getId()),
                 entity.getSessionMovieId(),
                 entity.getRoomId(),
                 entity.getSessionBeginTime(),
                 entity.getSessionEndTime(),
+                entity.getSetupDuration(),
+                entity.getMovieDuration(),
                 entity.getSessionScheduleState(),
-                entity.getSetupBeginTime(),
-                entity.getMovieDuration()
-
+                entity.isRemoved()
         );
     }
 
     public static SessionEntity toOutbound(Session session){
+        if (session == null) return null;
+
         return new SessionEntity(
                 session.getId().value(),
                 session.getMovieId(),
@@ -29,7 +32,8 @@ public class SessionMapper {
                 session.getSessionScheduleState(),
                 session.getRoomId(),
                 session.getSetupTime(),
-                session.getMovieDuration()
+                session.getMovieDuration(),
+                session.isRemoved()
         );
     }
 
