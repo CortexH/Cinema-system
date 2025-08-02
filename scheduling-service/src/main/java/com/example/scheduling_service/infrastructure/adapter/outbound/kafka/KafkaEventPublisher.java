@@ -2,7 +2,7 @@ package com.example.scheduling_service.infrastructure.adapter.outbound.kafka;
 
 import br.com.cinemaSYS.events.scheduler.SchedulerEvent;
 import com.example.scheduling_service.domain.domainEvents.*;
-import com.example.scheduling_service.domain.port.SessionEventPublisherPort;
+import com.example.scheduling_service.domain.port.session.SessionEventPublisherPort;
 import com.example.scheduling_service.infrastructure.adapter.outbound.kafka.mapper.SchedulerEventMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class KafkaEventPublisher implements SessionEventPublisherPort {
 
     private final KafkaTemplate<String, SchedulerEvent> kafkaTemplate;
 
-    @Value("kafka.topic.session-event")
+    @Value("${kafka.topic.session-event}")
     private String sessionEventTopic;
 
     private void publishSessionEvent(SchedulerEvent event) {
@@ -30,7 +28,7 @@ public class KafkaEventPublisher implements SessionEventPublisherPort {
             String key = event.getSession().getSessionId();
             kafkaTemplate.send(sessionEventTopic, key, event);
         } catch (Exception e) {
-            log.info("Falha ao finalizar sessões :: {}", e.getMessage());
+            log.info("Falha ao lançar evento :: {}", e.getMessage());
             throw e;
         }
     }
