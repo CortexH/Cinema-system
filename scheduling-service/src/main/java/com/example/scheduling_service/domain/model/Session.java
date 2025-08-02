@@ -214,10 +214,9 @@ public class Session {
         );
     }
 
-    public void changeSessionTime(Duration duration){
-        this.sessionBeginTime = sessionBeginTime.plus(duration);
+    public void changeOverallTime(Duration duration){
         this.sessionEndTime = sessionEndTime.plus(duration);
-        this.events.add(sessionChangedEvent());
+        this.sessionBeginTime = sessionBeginTime.plus(duration);
     }
 
     public void removeSession(){
