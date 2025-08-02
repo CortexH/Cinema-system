@@ -1,27 +1,26 @@
 package com.example.scheduling_service.domain.model;
 
 import com.example.scheduling_service.domain.domainEvents.*;
+import com.example.scheduling_service.domain.dtos.SessionEditDTO;
 import com.example.scheduling_service.domain.enums.SessionEventType;
 import com.example.scheduling_service.domain.enums.SessionScheduleState;
 import com.example.scheduling_service.domain.exception.SessionConflictException;
 import com.example.scheduling_service.domain.exception.SessionException;
+import com.example.scheduling_service.domain.exception.SessionStateException;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Session {
 
     private final List<SessionEvent> events = new ArrayList<>();
 
     private final SessionIdVO id;
-    private final UUID movieId;
-    private final UUID roomId;
+    private UUID movieId;
+    private UUID roomId;
 
     private LocalDateTime sessionBeginTime; // data e hora que a sessão inicia (contado logo após o início do 'setupTime')
     private LocalDateTime sessionEndTime;
@@ -30,6 +29,10 @@ public class Session {
     private Duration movieDuration;
 
     private SessionScheduleState sessionScheduleState;
+
+    private boolean removed;
+
+    // DESENVOLVER FUNCIONALIDADE PARA CALCULAR 'ENDTIME' E NÃO 'MOVIETIME'.
 
     public Session(
             SessionIdVO id, UUID movieId,
@@ -72,15 +75,45 @@ public class Session {
         this.events.add(createSessionScheduledEvent());
     }
 
+    public Session(SessionIdVO id,
+                   UUID movieId,
+                   UUID roomId,
+                   LocalDateTime sessionBeginTime,
+                   LocalDateTime sessionEndTime,
+                   Duration setupTime,
+                   Duration movieDuration,
+                   SessionScheduleState sessionScheduleState,
+                   boolean removed
+    ) {
+        this.id = id;
+        this.movieId = movieId;
+        this.roomId = roomId;
+        this.sessionBeginTime = sessionBeginTime;
+        this.sessionEndTime = sessionEndTime;
+        this.setupTime = setupTime;
+        this.movieDuration = movieDuration;
+        this.sessionScheduleState = sessionScheduleState;
+        this.removed = removed;
+    }
+
     public boolean syncStateWithLocalTime(){
         boolean validated = false;
-        while (validateSession()) {
+
+        if(validateRemoved()) return true;
+
+        while (validateSessionState()) {
             validated = true;
         }
         return validated;
     }
 
-    private boolean validateSession(){
+    private boolean validateRemoved(){
+        if(!removed) return false;
+        events.add(sessionRemovedEvent());
+        return true;
+    }
+
+    private boolean validateSessionState(){
         SessionScheduleState state = this.sessionScheduleState;
 
         switch (state){
@@ -164,11 +197,12 @@ public class Session {
         );
     }
 
-    private SessionChangedEvent sessionChangedEvent(){
+    private SessionChangedEvent sessionChangedEvent(Session previousSession){
         return new SessionChangedEvent(
                 SessionEventType.SESSION_EDITED, Instant.now(),
-                id.value(), movieId, roomId, sessionBeginTime,
-                sessionEndTime, movieDuration
+                previousSession.id.value(), previousSession.movieId,
+                previousSession.roomId, previousSession.sessionBeginTime,
+                previousSession.sessionEndTime, previousSession.movieDuration, this.generateSnapshot()
         );
     }
 
@@ -189,9 +223,35 @@ public class Session {
     public void removeSession(){
         if(this.sessionBeginTime.isBefore(LocalDateTime.now().plusDays(1)))
             throw new SessionException("não é possível remover sessões com menos de um dia para iniciar");
-
-        this.events.add(sessionRemovedEvent());
+        this.removed = true;
     }
+
+    public void editSession(SessionEditDTO data){
+        Session previousSession = generateSnapshot();
+
+        this.movieId = data.movieId();
+        this.roomId = data.roomId();
+        this.sessionBeginTime = data.sessionBeginTime();
+        this.sessionEndTime = data.sessionEndTime();
+        this.setupTime = data.setupTime();
+        this.movieDuration = data.movieDuration();
+        this.sessionScheduleState = data.sessionScheduleState();
+
+        validateData();
+
+        this.events.add(sessionChangedEvent(previousSession));
+    }
+
+    public Session generateSnapshot(){
+        return new Session(
+                this.id, this.movieId,
+                this.roomId, this.sessionBeginTime,
+                this.sessionEndTime, this.setupTime,
+                this.movieDuration, this.sessionScheduleState,
+                this.removed
+        );
+    }
+
 
     // VALIDATIONS
 
@@ -250,7 +310,22 @@ public class Session {
             throw new SessionException("Não é possível criar uma sessão anterior à data de hoje.");
     }
 
-    // get / set
+    public void validateIfEditable(){
+        if(sessionScheduleState.getOrder() > 1)
+            throw new SessionException("Não é possível editar sessão já agendada como '"+ sessionScheduleState + "'.");
+
+    }
+
+    public void markSessionAs(SessionScheduleState state){
+        if(removed) throw new SessionStateException("Não é possível alterar state da sessão para " + state + " pois a sessão já está removida.");
+
+        if(!this.sessionScheduleState.canTransitTo(state))
+            throw new SessionStateException("Não é possível alterar state para " + state + " pois a sessão não passou pelo estado anterior.");
+
+        this.sessionScheduleState = state;
+    }
+
+    // getters
 
     public Duration getTotalSessionDuration(){
         return Duration.between(sessionBeginTime, sessionEndTime);
@@ -314,8 +389,8 @@ public class Session {
         return movieDuration;
     }
 
-    public void setMovieDuration(Duration movieDuration) {
-        this.movieDuration = movieDuration;
+    public boolean isRemoved() {
+        return removed;
     }
 
     @Override
@@ -331,5 +406,17 @@ public class Session {
                 ", movieDuration=" + movieDuration +
                 ", sessionScheduleState=" + sessionScheduleState +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Session session = (Session) o;
+        return Objects.equals(id, session.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

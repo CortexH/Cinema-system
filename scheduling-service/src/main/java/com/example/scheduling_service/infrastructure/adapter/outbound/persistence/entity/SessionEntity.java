@@ -40,8 +40,12 @@ public class SessionEntity {
     private UUID roomId;
 
     @Convert(converter = DurationConverter.class)
-    private Duration setupBeginTime;
+    @Column(name = "setup_duration")
+    private Duration setupDuration;
 
+    @Column(name = "movie_duration")
     private Duration movieDuration;
+
+    private boolean removed;
 
 }
