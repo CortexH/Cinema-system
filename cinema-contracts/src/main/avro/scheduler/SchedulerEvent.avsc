@@ -16,6 +16,7 @@
       "type": {
         "type": "record",
         "name": "SessionDTO",
+        "namespace": "br.com.cinemaSYS.events.scheduler",
         "fields": [
           {"name": "sessionId", "type": {"type": "string", "logicalType": "UUID"}},
           {"name": "movieId", "type": {"type": "string", "logicalType": "UUID"}},
@@ -25,6 +26,34 @@
           {"name": "movieDuration", "type": "long"}
         ]
       }
+    },
+    {
+      "name": "newSession",
+      "type": ["null", {
+        "type": "record",
+        "name": "ChangedSession",
+        "namespace": "br.com.cinemaSYS.events.scheduler",
+        "fields": [
+          {"name": "sessionId", "type": {"type": "string", "logicalType": "UUID"}},
+          {"name": "movieId", "type": {"type": "string", "logicalType": "UUID"}},
+          {"name": "roomId", "type": {"type": "string", "logicalType": "UUID"}},
+          {"name": "sessionBeginTime", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+          {"name": "sessionEndTime", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+          {"name": "movieDuration", "type": "long"},
+          {"name": "setupDuration", "type": ["null", "long"], "default": null},
+          {
+            "name": "sessionState",
+            "type":["null", {
+              "type": "enum",
+              "name": "sessionScheduledState",
+              "symbols": ["PENDING", "SCHEDULED", "SETUP_IN_PROGRESS", "NOW_WORKING", "FINISHED"]
+            }],
+            "default": null
+          },
+          {"name": "removed", "type": ["null", "boolean"], "default": null}
+        ]
+      }],
+      "default": null
     },
     {
       "name": "eventType",

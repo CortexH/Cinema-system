@@ -17,6 +17,5 @@ public interface ScheduledSessionUseCase {
     List<Session> findAllSessions(Integer limitDay);
 
     Session insertNewSession(Session session);
-    Session removeSession(SessionIdVO sessionIdVO);
     List<Session> findNowWorkingSessions();
 }

@@ -1,6 +1,7 @@
 package com.example.scheduling_service.domain.domainEvents;
 
 import com.example.scheduling_service.domain.enums.SessionEventType;
+import com.example.scheduling_service.domain.model.Session;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -15,6 +16,7 @@ public record SessionChangedEvent(
         UUID roomId,
         LocalDateTime sessionBeginTime,
         LocalDateTime sessionEndTime,
-        Duration movieDuration
+        Duration movieDuration,
+        Session newSession
 ) implements SessionEvent {
 }
