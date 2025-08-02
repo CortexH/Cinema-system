@@ -1,6 +1,6 @@
 package com.example.scheduling_service.infrastructure.adapter.outbound.web.gateway;
 
-import com.example.scheduling_service.domain.port.MovieGateway;
+import com.example.scheduling_service.domain.port.gateway.MovieGateway;
 import com.example.scheduling_service.infrastructure.adapter.outbound.web.entity.MovieEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

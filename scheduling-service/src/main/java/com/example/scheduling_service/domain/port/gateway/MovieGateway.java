@@ -1,4 +1,4 @@
-package com.example.scheduling_service.domain.port;
+package com.example.scheduling_service.domain.port.gateway;
 
 import com.example.scheduling_service.infrastructure.adapter.outbound.web.entity.MovieEntity;
 
