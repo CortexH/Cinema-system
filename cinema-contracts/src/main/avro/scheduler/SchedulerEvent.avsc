@@ -63,7 +63,8 @@
         "symbols": [
           "SESSION_ENDED", "SESSION_BEGIN",
           "SESSION_REMOVED", "SESSION_ADDED",
-          "SESSION_EDITED", "SESSION_NEAR_TO_BEGIN"
+          "SESSION_EDITED", "SESSION_NEAR_TO_BEGIN",
+          "SESSION_SETUP_BEGIN"
         ]
       }
     },

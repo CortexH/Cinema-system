@@ -64,6 +64,7 @@ public interface SessionRepositoryJPA extends JpaRepository<SessionEntity, UUID>
         SELECT * FROM session_queue s
         WHERE s.session_begin_time >= :beginTime
         AND s.id != :excluded
+        AND s.removed = false
         ORDER BY s.session_begin_time ASC
         LIMIT 1
         """
@@ -78,6 +79,7 @@ public interface SessionRepositoryJPA extends JpaRepository<SessionEntity, UUID>
         SELECT * FROM session_queue s
         WHERE s.session_begin_time <= :beginTime
         AND s.id != :excluded
+        AND s.removed = false
         ORDER BY s.session_begin_time DESC
         LIMIT 1
     """

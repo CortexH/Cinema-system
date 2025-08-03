@@ -5,6 +5,7 @@ import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 
 public interface SessionEditUseCase {
 
+    void changePendingCommandsStatusToFailed(SessionIdVO sessionIdVO);
     Session runSessionPendingCommands(SessionIdVO sessionIdVO);
 
 }

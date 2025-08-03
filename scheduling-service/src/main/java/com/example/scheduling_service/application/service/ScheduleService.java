@@ -40,9 +40,7 @@ public class ScheduleService implements SessionSchedulerUseCase {
 
     }
 
-    // Estruturar melhor ambos esses métodos.
     @Override
-    //@Transactional("transactionManager")
     public void runScheduledCheckout() {
         List<Session> allSessions = findSessions();
 

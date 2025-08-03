@@ -26,6 +26,12 @@ public class SessionEditService implements SessionEditUseCase {
     private final SessionEditDomainService sessionEditDomainService;
 
     @Override
+    public void changePendingCommandsStatusToFailed(SessionIdVO sessionIdVO) {
+        List<SessionEditCommand> commands = sessionEditQueryPort.findBySessionId(sessionIdVO);
+        sessionEditCommandPort.markAllAsFailed(commands, null);
+    }
+
+    @Override
     public Session runSessionPendingCommands(SessionIdVO sessionIdVO) {
         Session session = sessionQueryPort.findById(sessionIdVO)
                 .orElse(null);

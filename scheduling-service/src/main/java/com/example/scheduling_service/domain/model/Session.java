@@ -109,6 +109,10 @@ public class Session {
 
     private boolean validateRemoved(){
         if(!removed) return false;
+
+        List<SessionEvent> allEvents = new ArrayList<>(events);
+        events.removeAll(allEvents);
+
         events.add(sessionRemovedEvent());
         return true;
     }

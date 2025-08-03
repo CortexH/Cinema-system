@@ -49,7 +49,7 @@ public class SessionEditDomainService {
                     that.getMovieId(), that.getSessionBeginTime(),
                     that.getSessionEndTime(), that.getSetupTime(),
                     that.getMovieDuration(), that.getSessionScheduleState(),
-                    null, null, // MUDAR
+                    null, null,
                     CommandStatus.PENDING
             );
 
@@ -92,7 +92,6 @@ public class SessionEditDomainService {
                         command.createdAt(), CommandStatus.FAILED
                 ));
             }
-
 
         }
 

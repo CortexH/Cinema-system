@@ -20,7 +20,6 @@ public class SessionEventConsumer {
             id = "SchedulerEventListener"
     )
     public void handleSessionChangeEvent(SchedulerEvent schedulerEvent){
-        System.out.println(schedulerEvent.toString());
         SessionEvent event = SchedulerEventMapper.toSessionEvent(schedulerEvent);
         eventUseCase.handle(event);
     }

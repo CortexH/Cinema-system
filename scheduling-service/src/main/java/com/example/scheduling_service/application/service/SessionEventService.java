@@ -4,14 +4,12 @@ import com.example.scheduling_service.application.port.SessionEditUseCase;
 import com.example.scheduling_service.application.port.SessionEventUseCase;
 import com.example.scheduling_service.domain.domainEvents.*;
 import com.example.scheduling_service.domain.domainServices.SessionDomainService;
-import com.example.scheduling_service.domain.domainServices.SessionEditDomainService;
 import com.example.scheduling_service.domain.model.Session;
 import com.example.scheduling_service.domain.port.session.SessionCommandRepositoryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +35,7 @@ public class SessionEventService implements SessionEventUseCase {
             case SESSION_REMOVED -> {
                 Session used = sessionDomainService.handleSessionRemoved((SessionRemovedEvent) event);
                 sessionCommandPort.removeScheduledSession(used.getId());
+                sessionEditUseCase.changePendingCommandsStatusToFailed(used.getId());
                 yield null;
             }
             case SESSION_EDITED -> sessionEditUseCase.runSessionPendingCommands(SessionIdVO.from(((SessionChangedEvent) event).sessionId()));

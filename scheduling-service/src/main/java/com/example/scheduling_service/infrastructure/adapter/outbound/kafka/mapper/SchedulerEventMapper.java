@@ -82,7 +82,7 @@ public class SchedulerEventMapper {
     public static SchedulerEvent fromSessionSetupBegin(SessionSetupBeginEvent event){
         return SchedulerEvent.newBuilder()
                 .setEventId(UUID.randomUUID().toString())
-                .setEventType(SchedulerEventType.SESSION_BEGIN)
+                .setEventType(SchedulerEventType.SESSION_SETUP_BEGIN)
                 .setTimestamp(event.timestamp())
                 .setSession(SessionDTO.newBuilder()
                         .setMovieId(event.movieId().toString())
@@ -158,6 +158,16 @@ public class SchedulerEventMapper {
                     event.getSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime(),
                     Duration.ofMillis(event.getSession().getMovieDuration())
             );
+            case SESSION_SETUP_BEGIN -> new SessionSetupBeginEvent(
+                    SessionEventType.SESSION_SETUP, event.getTimestamp(),
+                    UUID.fromString(event.getSession().getSessionId()),
+                    UUID.fromString(event.getSession().getMovieId()),
+                    UUID.fromString(event.getSession().getRoomId()),
+                    (event.getSession().getSessionBeginTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime()),
+                    event.getSession().getSessionEndTime().atZone(ZoneId.of("America/Sao_Paulo")).toLocalDateTime(),
+                    Duration.ofMillis(event.getSession().getMovieDuration())
+            );
+
             case SESSION_BEGIN -> new SessionBeginEvent(
                     SessionEventType.SESSION_BEGIN, event.getTimestamp(),
                     UUID.fromString(event.getSession().getSessionId()),

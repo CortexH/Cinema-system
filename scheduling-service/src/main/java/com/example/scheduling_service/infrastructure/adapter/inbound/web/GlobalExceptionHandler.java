@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SessionConflictException.class)
-    public ResponseEntity<GenericErrorResponse> handleSessionException(
+    public ResponseEntity<GenericErrorResponse> handleSessionConflict(
             SessionConflictException ex, HttpServletRequest request
     ){
         return ResponseEntity.status(HttpStatus.CONFLICT)

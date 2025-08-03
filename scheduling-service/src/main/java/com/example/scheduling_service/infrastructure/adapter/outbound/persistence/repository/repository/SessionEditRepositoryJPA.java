@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,5 +26,20 @@ public interface SessionEditRepositoryJPA extends JpaRepository<SessionEditComma
                     "ORDER BY created_at ASC"
     )
     List<SessionEditCommandEntity> findAllPendingAndOrder();
+
+    @Query(nativeQuery = true,
+            value = """
+                    SELECT * FROM session_edit_commands s
+                    WHERE s.status = 'PENDING' AND (
+                    (s.new_begin_time BETWEEN :beginTime AND :endTime)
+                    OR
+                    (s.new_end_time BETWEEN :beginTime AND :endTime)
+                    )
+                    """
+    )
+    List<SessionEditCommandEntity> findAllPendingByTimeRangeOrdered(
+            @Param("beginTime")LocalDateTime beginTime,
+            @Param("endTime") LocalDateTime endTime
+            );
 
 }
