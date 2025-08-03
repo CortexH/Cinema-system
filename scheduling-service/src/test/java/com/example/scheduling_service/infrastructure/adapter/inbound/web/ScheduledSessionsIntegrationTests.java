@@ -2,9 +2,14 @@ package com.example.scheduling_service.infrastructure.adapter.inbound.web;
 
 import com.example.scheduling_service.application.dto.request.SessionRequestDTO;
 import com.example.scheduling_service.application.dto.response.SessionDisplayDTO;
+import com.example.scheduling_service.application.service.SessionEditService;
 import com.example.scheduling_service.domain.domainEvents.SessionEvent;
 import com.example.scheduling_service.domain.model.Session;
 import com.example.scheduling_service.domain.port.session.SessionEventPublisherPort;
+import com.example.scheduling_service.domain.port.session.SessionQueryRepositoryPort;
+import com.example.scheduling_service.domain.port.sessionEdit.SessionEditCommandPort;
+import com.example.scheduling_service.domain.port.sessionEdit.SessionEditQueryPort;
+import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import com.example.scheduling_service.infrastructure.adapter.inbound.web.mapper.SessionRequestDTOMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.mapper.SessionMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.repository.repository.SessionRepositoryJPA;
@@ -34,6 +39,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.Mockito.mock;
+
 
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -41,10 +48,11 @@ import java.util.UUID;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Transactional
 public class ScheduledSessionsIntegrationTests {
-    /*
+
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
     private final SessionRepositoryJPA sessionRepository;
+    private final SessionEditService sessionEditService;
 
     @MockBean
     private final SessionEventPublisherPort sessionEventPort;
@@ -58,7 +66,6 @@ public class ScheduledSessionsIntegrationTests {
         SessionRequestDTO data = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
                 LocalDateTime.now().format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(3).format(dateTimeFormatter),
                 2700L, 8100L
         );
 
@@ -82,14 +89,13 @@ public class ScheduledSessionsIntegrationTests {
         Assert.isTrue(databaseSession.getSetupTime().equals(requestSession.getSetupTime()), "o campo 'setupTime' de ambas as sessões não condizem");
     }
 
-    //@Test
+    @Test
     @DisplayName("Validar adicionar sessão sem enviar o campo 'movie_duration'")
     void validateInsertSessionWithoutMovieDuration() throws Exception {
 
         SessionRequestDTO data = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
                 LocalDateTime.now().format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(3).format(dateTimeFormatter),
                 2700L, 8100L
         );
 
@@ -106,58 +112,35 @@ public class ScheduledSessionsIntegrationTests {
 
     }
 
-    @Test
-    @DisplayName("Validar remoção dos espaços de tempo vazios entre tempo de setup e tempo de filme")
-    void validateSessionStateSetupTimeGapFilling() throws Exception {
-        int addedSeconds = 25 * 60;
-        Duration movieDuration = Duration.ofMinutes(90);
-        Duration setupDuration = Duration.ofMinutes(45);
-        Duration totalSessionDuration = movieDuration.plus(setupDuration).plusSeconds(addedSeconds);
-
-        SessionRequestDTO data = new SessionRequestDTO(
-                UUID.randomUUID(), UUID.randomUUID(),
-                LocalDateTime.now().format(dateTimeFormatter),
-                LocalDateTime.now().plus(totalSessionDuration).format(dateTimeFormatter),
-                setupDuration.toSeconds(), movieDuration.toSeconds()
-        );
-
-        String request = objectMapper.writeValueAsString(data);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/v1/scheduler-sessions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.setup_duration").value(setupDuration.toSeconds() + addedSeconds));
-    }
-
-    @Test
+    //@Test refatorar teste
     @DisplayName("Validar realizar remoção de sessão com 'replace' como 'true' ")
     void validateSessionStateRemoveWithReplace() throws Exception {
 
         LocalDateTime firstSessionBeginTime = LocalDateTime.now().plusDays(2);
-        LocalDateTime firstSessionEndTime = firstSessionBeginTime.plus(Duration.ofHours(2));
 
-        LocalDateTime secondSessionEndTime = firstSessionEndTime.plus(Duration.ofHours(2));
+        SessionRequestDTO firstSessionRequest = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                firstSessionBeginTime.format(dateTimeFormatter),
+                3000L, 6000L
+        );
+
+        Session firstSession = SessionRequestDTOMapper.toInbound(firstSessionRequest);
+
+        SessionRequestDTO secondSessionRequest = new SessionRequestDTO(
+                UUID.randomUUID(), UUID.randomUUID(),
+                firstSession.getSessionEndTime().format(dateTimeFormatter),
+                3000L, 6000L
+        );
+
+        Session secondSession = SessionRequestDTOMapper.toInbound(secondSessionRequest);
+
+        LocalDateTime firstSessionEndTime = firstSession.getSessionEndTime();
+        LocalDateTime secondSessionEndTime = secondSession.getSessionEndTime();
 
         Duration firstSessionTotalDuration = Duration.between(firstSessionBeginTime, firstSessionEndTime).negated();
 
-        SessionRequestDTO firstSession = new SessionRequestDTO(
-                UUID.randomUUID(), UUID.randomUUID(),
-                firstSessionBeginTime.format(dateTimeFormatter),
-                firstSessionEndTime.format(dateTimeFormatter),
-                3000L, null
-        );
-
-        SessionRequestDTO secondSession = new SessionRequestDTO(
-                UUID.randomUUID(), UUID.randomUUID(),
-                firstSessionEndTime.format(dateTimeFormatter),
-                secondSessionEndTime.format(dateTimeFormatter),
-                3000L, null
-        );
-
-        String firstRequest = objectMapper.writeValueAsString(firstSession);
-        String secondRequest = objectMapper.writeValueAsString(secondSession);
+        String firstRequest = objectMapper.writeValueAsString(firstSessionRequest);
+        String secondRequest = objectMapper.writeValueAsString(secondSessionRequest);
 
         String firstResponse = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/v1/scheduler-sessions")
@@ -177,8 +160,6 @@ public class ScheduledSessionsIntegrationTests {
                 .getResponse()
                 .getContentAsString();
 
-
-
         SessionDisplayDTO firstData = objectMapper.readValue(firstResponse, SessionDisplayDTO.class);
         UUID firstId = firstData.session_id();
 
@@ -189,6 +170,9 @@ public class ScheduledSessionsIntegrationTests {
                 "/api/v1/scheduler-sessions/{id}?replace={replace}",
                 firstId, "true"))
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
+
+        sessionEditService.runSessionPendingCommands(SessionIdVO.from(firstId));
+        sessionEditService.runSessionPendingCommands(SessionIdVO.from(secondId));
 
         List<Session> sessions = sessionRepository.findAll()
                 .stream().map(SessionMapper::toInbound).toList();
@@ -231,26 +215,28 @@ public class ScheduledSessionsIntegrationTests {
     @DisplayName("Validar realizar remoção de sessão com 'replace' como 'false' ")
     void validateSessionStateRemoveWithoutReplace() throws Exception {
         LocalDateTime firstSessionBeginTime = LocalDateTime.now().plusDays(2);
-        LocalDateTime firstSessionEndTime = firstSessionBeginTime.plus(Duration.ofHours(2));
 
-        LocalDateTime secondSessionEndTime = firstSessionEndTime.plus(Duration.ofHours(2));
-
-        SessionRequestDTO firstSession = new SessionRequestDTO(
+        SessionRequestDTO firstSessionRequest = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
                 firstSessionBeginTime.format(dateTimeFormatter),
-                firstSessionEndTime.format(dateTimeFormatter),
-                3000L, null
+                3000L, 6000L
         );
 
-        SessionRequestDTO secondSession = new SessionRequestDTO(
+        Session firstSession = SessionRequestDTOMapper.toInbound(firstSessionRequest);
+
+        SessionRequestDTO secondSessionRequest = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
-                firstSessionEndTime.format(dateTimeFormatter),
-                secondSessionEndTime.format(dateTimeFormatter),
-                3000L, null
+                firstSession.getSessionEndTime().format(dateTimeFormatter),
+                3000L, 6000L
         );
 
-        String firstRequest = objectMapper.writeValueAsString(firstSession);
-        String secondRequest = objectMapper.writeValueAsString(secondSession);
+        Session secondSession = SessionRequestDTOMapper.toInbound(secondSessionRequest);
+
+        LocalDateTime firstSessionEndTime = firstSession.getSessionEndTime();
+        LocalDateTime secondSessionEndTime = secondSession.getSessionEndTime();
+
+        String firstRequest = objectMapper.writeValueAsString(firstSessionRequest);
+        String secondRequest = objectMapper.writeValueAsString(secondSessionRequest);
 
         String firstResponse = mockMvc.perform(MockMvcRequestBuilders
                         .post("/api/v1/scheduler-sessions")
@@ -321,43 +307,32 @@ public class ScheduledSessionsIntegrationTests {
         SessionRequestDTO session = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
                 LocalDateTime.now().format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(3).format(dateTimeFormatter),
                 2700L, 8100L
         );
 
         SessionRequestDTO sameTimeSession = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
                 LocalDateTime.now().format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(3).format(dateTimeFormatter),
                 2700L, 8100L
         );
 
         SessionRequestDTO conflictedEndTimeSession = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
                 LocalDateTime.now().minusHours(2).format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(1).format(dateTimeFormatter),
                 2700L, 8100L
         );
 
         SessionRequestDTO conflictedStartTimeSession = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
                 LocalDateTime.now().plusHours(2).format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(5).format(dateTimeFormatter),
                 2700L, 8100L
         );
 
-        SessionRequestDTO endTimeBeforeStartTimeSession = new SessionRequestDTO(
-                UUID.randomUUID(), UUID.randomUUID(),
-                LocalDateTime.now().plusHours(6).format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(5).format(dateTimeFormatter),
-                2700L, 8100L
-        );
 
         String sessionRequest = objectMapper.writeValueAsString(session);
         String sameTimeRequest = objectMapper.writeValueAsString(sameTimeSession);
         String conflictedEndTimeRequest = objectMapper.writeValueAsString(conflictedEndTimeSession);
         String conflictedStartTimeRequest = objectMapper.writeValueAsString(conflictedStartTimeSession);
-        String endTimeBeforeStartTimeRequest = objectMapper.writeValueAsString(endTimeBeforeStartTimeSession);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/v1/scheduler-sessions")
@@ -379,49 +354,6 @@ public class ScheduledSessionsIntegrationTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(conflictedStartTimeRequest)).andExpect(MockMvcResultMatchers.status().isConflict());
 
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/v1/scheduler-sessions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(endTimeBeforeStartTimeRequest)).andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
-    @Test
-    @DisplayName("Validar adicionar uma sessão com tempo de setup maior que o tempo total da sessão")
-    void validateSetupDurationGreaterThanSessionDuration() throws Exception {
-        SessionRequestDTO data = new SessionRequestDTO(
-                UUID.randomUUID(), UUID.randomUUID(),
-                LocalDateTime.now().format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(1).format(dateTimeFormatter),
-                (long) (120 * 60), 0L
-        );
-
-        String request = objectMapper.writeValueAsString(data);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/v1/scheduler-sessions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
-
-    }
-
-    @Test
-    @DisplayName("Validar adicionar uma sessão com tempo de filme maior que o tempo total da sessão")
-    void validateMovieDurationGreaterThanSessionDuration() throws Exception {
-        SessionRequestDTO data = new SessionRequestDTO(
-                UUID.randomUUID(), UUID.randomUUID(),
-                LocalDateTime.now().format(dateTimeFormatter),
-                LocalDateTime.now().plusHours(1).format(dateTimeFormatter),
-                0L, (long) (120 * 60)
-        );
-
-        String request = objectMapper.writeValueAsString(data);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/v1/scheduler-sessions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
-    }
-     */
 }
