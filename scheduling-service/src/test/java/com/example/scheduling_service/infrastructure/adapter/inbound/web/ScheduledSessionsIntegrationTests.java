@@ -2,6 +2,8 @@ package com.example.scheduling_service.infrastructure.adapter.inbound.web;
 
 import com.example.scheduling_service.application.dto.request.SessionRequestDTO;
 import com.example.scheduling_service.application.dto.response.SessionDisplayDTO;
+import com.example.scheduling_service.application.port.SessionEventUseCase;
+import com.example.scheduling_service.application.port.SessionSchedulerUseCase;
 import com.example.scheduling_service.application.service.SessionEditService;
 import com.example.scheduling_service.domain.domainEvents.SessionEvent;
 import com.example.scheduling_service.domain.model.Session;
@@ -11,12 +13,13 @@ import com.example.scheduling_service.domain.port.sessionEdit.SessionEditCommand
 import com.example.scheduling_service.domain.port.sessionEdit.SessionEditQueryPort;
 import com.example.scheduling_service.domain.valueObject.SessionIdVO;
 import com.example.scheduling_service.infrastructure.adapter.inbound.web.mapper.SessionRequestDTOMapper;
+import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.entity.SessionEntity;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.mapper.SessionMapper;
 import com.example.scheduling_service.infrastructure.adapter.outbound.persistence.repository.repository.SessionRepositoryJPA;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,6 +29,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -40,6 +44,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 
 @Slf4j
@@ -53,6 +58,8 @@ public class ScheduledSessionsIntegrationTests {
     private final ObjectMapper objectMapper;
     private final SessionRepositoryJPA sessionRepository;
     private final SessionEditService sessionEditService;
+    private final SessionSchedulerUseCase sessionSchedulerUseCase;
+    private final SessionEventUseCase sessionEventUseCase;
 
     @MockBean
     private final SessionEventPublisherPort sessionEventPort;
@@ -112,40 +119,39 @@ public class ScheduledSessionsIntegrationTests {
 
     }
 
-    //@Test refatorar teste
+    @Test
     @DisplayName("Validar realizar remoção de sessão com 'replace' como 'true' ")
     void validateSessionStateRemoveWithReplace() throws Exception {
 
-        LocalDateTime firstSessionBeginTime = LocalDateTime.now().plusDays(2);
-
-        SessionRequestDTO firstSessionRequest = new SessionRequestDTO(
+        SessionRequestDTO firstSessionRequestDTO = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
-                firstSessionBeginTime.format(dateTimeFormatter),
-                3000L, 6000L
+                LocalDateTime.now().plusDays(2).format(dateTimeFormatter),
+                2700L, 8100L
         );
 
-        Session firstSession = SessionRequestDTOMapper.toInbound(firstSessionRequest);
+        Session firstSession = SessionRequestDTOMapper.toInbound(firstSessionRequestDTO);
 
-        SessionRequestDTO secondSessionRequest = new SessionRequestDTO(
+        SessionRequestDTO secondSessionRequestDTO = new SessionRequestDTO(
                 UUID.randomUUID(), UUID.randomUUID(),
                 firstSession.getSessionEndTime().format(dateTimeFormatter),
-                3000L, 6000L
+                2700L, 8100L
         );
 
-        Session secondSession = SessionRequestDTOMapper.toInbound(secondSessionRequest);
+        Session secondSession = SessionRequestDTOMapper.toInbound(secondSessionRequestDTO);
 
-        LocalDateTime firstSessionEndTime = firstSession.getSessionEndTime();
-        LocalDateTime secondSessionEndTime = secondSession.getSessionEndTime();
+        Duration minusDuration = firstSession.getTotalSessionDuration().negated();
+        secondSession.changeOverallTime(minusDuration);
 
-        Duration firstSessionTotalDuration = Duration.between(firstSessionBeginTime, firstSessionEndTime).negated();
+        LocalDateTime expectedSecondBeginTime = secondSession.getSessionBeginTime();
+        LocalDateTime expectedSecondEndTime = secondSession.getSessionEndTime();
 
-        String firstRequest = objectMapper.writeValueAsString(firstSessionRequest);
-        String secondRequest = objectMapper.writeValueAsString(secondSessionRequest);
+        String request1 = objectMapper.writeValueAsString(firstSessionRequestDTO);
+        String request2 = objectMapper.writeValueAsString(secondSessionRequestDTO);
 
         String firstResponse = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/v1/scheduler-sessions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(firstRequest))
+                        .post("/api/v1/scheduler-sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request1))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn()
                 .getResponse()
@@ -154,60 +160,45 @@ public class ScheduledSessionsIntegrationTests {
         String secondResponse = mockMvc.perform(MockMvcRequestBuilders
                         .post("/api/v1/scheduler-sessions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(secondRequest))
+                        .content(request2))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        SessionDisplayDTO firstData = objectMapper.readValue(firstResponse, SessionDisplayDTO.class);
-        UUID firstId = firstData.session_id();
+        SessionDisplayDTO firstDisplay = objectMapper.readValue(firstResponse, SessionDisplayDTO.class);
+        SessionDisplayDTO secondDisplay = objectMapper.readValue(secondResponse, SessionDisplayDTO.class);
 
-        SessionDisplayDTO secondData = objectMapper.readValue(secondResponse, SessionDisplayDTO.class);
-        UUID secondId = secondData.session_id();
+        sessionRepository.findAll()
+                .forEach(i -> log.info("BEFORE :: {}", i.getSessionBeginTime().toString()));
 
-        mockMvc.perform(MockMvcRequestBuilders.delete(
-                "/api/v1/scheduler-sessions/{id}?replace={replace}",
-                firstId, "true"))
+        mockMvc.perform(MockMvcRequestBuilders
+                .delete("/api/v1/scheduler-sessions/{id}?replace={replace}",
+                        firstDisplay.session_id(), true))
                 .andExpect(MockMvcResultMatchers.status().isAccepted());
 
-        sessionEditService.runSessionPendingCommands(SessionIdVO.from(firstId));
-        sessionEditService.runSessionPendingCommands(SessionIdVO.from(secondId));
+        sessionSchedulerUseCase.runScheduledCheckout();
 
-        List<Session> sessions = sessionRepository.findAll()
-                .stream().map(SessionMapper::toInbound).toList();
+        ArgumentCaptor<List<SessionEvent>> captor = ArgumentCaptor.forClass(List.class);
 
-        Session notRemovedSession = sessions.stream().filter(i -> i.getId().value().equals(secondId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Sessão com o id " + secondId + " não foi encontrada"));
+        verify(sessionEventPort).publishAll(captor.capture());
 
-        boolean isBeginCorrect = notRemovedSession.getSessionBeginTime().truncatedTo(ChronoUnit.SECONDS)
-                        .isEqual(firstSessionEndTime.truncatedTo(ChronoUnit.SECONDS).plus(firstSessionTotalDuration));
+        List<SessionEvent> sessionEvents = captor.getValue();
 
-        Assert.isTrue(
-                isBeginCorrect,
-                "O tempo de inicio da sessão não confere com o tempo que deveria ser.\n" +
-                        "Tempo esperado: " + firstSessionEndTime.truncatedTo(ChronoUnit.SECONDS).plus(firstSessionTotalDuration) +
-                        "\nTempo atual: " + notRemovedSession.getSessionBeginTime()
-        );
+        sessionEvents.forEach(i -> log.info(i.eventType().name()));
 
-        boolean isEndCorrect = notRemovedSession.getSessionEndTime().truncatedTo(ChronoUnit.SECONDS)
-                        .isEqual(secondSessionEndTime.truncatedTo(ChronoUnit.SECONDS).plus(firstSessionTotalDuration));
+        for(SessionEvent event : sessionEvents){
+            sessionEventUseCase.handle(event);
+        }
 
-        Assert.isTrue(
-                isEndCorrect,
-                "O tempo de inicio da sessão não confere com o tempo que deveria ser.\n" +
-                        "Tempo esperado: " + firstSessionBeginTime +
-                        "\nTempo atual: " + notRemovedSession.getSessionBeginTime()
-        );
+        List<SessionEntity> newSessions = sessionRepository.findAll();
 
-        ArgumentCaptor<List<SessionEvent>> eventListCaptor = ArgumentCaptor.forClass(List.class);
+        Assertions.assertEquals(1, newSessions.size(), "A quantidade de sessões retornadas não é igual a 1. Quantidade: " + newSessions.size());
 
-        Mockito.verify(sessionEventPort, Mockito.times(1)).publishAll(eventListCaptor.capture());
+        SessionEntity entity = newSessions.getFirst();
 
-        List<SessionEvent> events = eventListCaptor.getValue();
-
-        Assertions.assertThat(events.size()).isEqualTo(4);
+        Assertions.assertEquals(expectedSecondBeginTime, entity.getSessionBeginTime());
+        Assertions.assertEquals(expectedSecondEndTime, entity.getSessionEndTime());
 
     }
 
@@ -255,8 +246,6 @@ public class ScheduledSessionsIntegrationTests {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-
-
 
         SessionDisplayDTO firstData = objectMapper.readValue(firstResponse, SessionDisplayDTO.class);
         UUID firstId = firstData.session_id();

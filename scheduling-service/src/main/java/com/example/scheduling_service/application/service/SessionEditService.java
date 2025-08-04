@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,12 @@ public class SessionEditService implements SessionEditUseCase {
         sessionEditCommandPort.saveInBatch(editDTO.commands());
 
         return editDTO.session();
+    }
+
+    @Override
+    public Optional<SessionEditCommand> findLastPendingEditCommand(SessionIdVO sessionIdVO) {
+        List<SessionEditCommand> commands = sessionEditQueryPort.findBySessionId(sessionIdVO);
+        return Optional.ofNullable(commands.getLast());
     }
 
 }
