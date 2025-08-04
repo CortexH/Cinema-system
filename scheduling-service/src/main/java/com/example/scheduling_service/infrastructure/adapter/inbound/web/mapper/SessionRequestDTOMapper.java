@@ -19,7 +19,6 @@ public class SessionRequestDTOMapper {
 
         Duration setupDuration = Duration.ofSeconds(data.setup_duration());
         LocalDateTime beginTime = LocalDateTime.parse(data.session_begin_time(), dateTimeFormatter);
-        LocalDateTime endTime = LocalDateTime.parse(data.session_end_time(), dateTimeFormatter);
 
         Duration movieDuration = Duration.ofSeconds(
                 (data.movie_duration() == null) ? 0 : data.movie_duration()
@@ -27,7 +26,7 @@ public class SessionRequestDTOMapper {
 
         return new Session(
                 SessionIdVO.generate(), data.movie_id(),
-                data.room_id(), beginTime, endTime, setupDuration,
+                data.room_id(), beginTime, setupDuration,
                 movieDuration
         );
     }

@@ -49,8 +49,6 @@ public class Session {
         this.sessionScheduleState = sessionScheduleState;
         this.setupTime = setupTime;
         this.movieDuration = movieDuration;
-        calculateMovieDurationIfNull();
-        calculateSetupDuration();
         validateData();
         this.events.add(createSessionScheduledEvent());
     }
@@ -58,19 +56,16 @@ public class Session {
     public Session(
             SessionIdVO id, UUID movieId,
             UUID roomId, LocalDateTime sessionBeginTime,
-            LocalDateTime sessionEndTime,
             Duration setupTime, Duration movieDuration
     ){
         this.id = id;
         this.movieId = movieId;
         this.roomId = roomId;
         this.sessionBeginTime = sessionBeginTime;
-        this.sessionEndTime = sessionEndTime;
         this.setupTime = setupTime;
         this.movieDuration = movieDuration;
         this.sessionScheduleState = SessionScheduleState.SCHEDULED;
-        calculateMovieDurationIfNull();
-        calculateSetupDuration();
+        calculateSessionEndTime();
         validateData();
         this.events.add(createSessionScheduledEvent());
     }
@@ -153,18 +148,10 @@ public class Session {
         }
     }
 
-    private void calculateMovieDurationIfNull(){
-        if(this.movieDuration != null && this.movieDuration != Duration.ZERO) return;
-        if(this.setupTime == null) this.setupTime = Duration.ZERO;
-
-        this.movieDuration = Duration.between(
-                sessionBeginTime.plusNanos(setupTime.toNanos()),
-                sessionEndTime
+    private void calculateSessionEndTime(){
+        this.sessionEndTime = sessionBeginTime.plus(
+                setupTime.plus(movieDuration)
         );
-    }
-
-    private void calculateSetupDuration(){
-        this.setupTime = Duration.between(sessionBeginTime.plus(movieDuration), sessionEndTime);
     }
 
     private SessionSetupBeginEvent createSessionSetupBeginEvent(){
@@ -360,32 +347,16 @@ public class Session {
         return sessionBeginTime;
     }
 
-    public void setSessionBeginTime(LocalDateTime sessionBeginTime) {
-        this.sessionBeginTime = sessionBeginTime;
-    }
-
     public LocalDateTime getSessionEndTime() {
         return sessionEndTime;
-    }
-
-    public void setSessionEndTime(LocalDateTime sessionEndTime) {
-        this.sessionEndTime = sessionEndTime;
     }
 
     public Duration getSetupTime() {
         return setupTime;
     }
 
-    public void setSetupTime(Duration setupTime) {
-        this.setupTime = setupTime;
-    }
-
     public SessionScheduleState getSessionScheduleState() {
         return sessionScheduleState;
-    }
-
-    public void setSessionScheduleState(SessionScheduleState sessionScheduleState) {
-        this.sessionScheduleState = sessionScheduleState;
     }
 
     public Duration getMovieDuration() {
